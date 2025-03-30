@@ -514,6 +514,10 @@ def doctor_dashboard():
     upcoming_consultations = []
     pending_requests = []
     recent_payments = []
+    total_prescriptions = 0
+    total_earnings = 0
+    total_consultations = 0
+    completed_consultations = 0
     
     # Only fetch data if doctor is verified
     if is_verified:
@@ -536,12 +540,44 @@ def doctor_dashboard():
             Consultation.doctor_id == current_user.doctor.id,
             Payment.status == 'completed'
         ).order_by(Payment.timestamp.desc()).limit(5).all()
+        
+        # Calculate total earnings
+        earnings_result = db.session.query(func.sum(Payment.amount)).join(Consultation).filter(
+            Consultation.doctor_id == current_user.doctor.id,
+            Payment.status == 'completed'
+        ).scalar()
+        total_earnings = earnings_result if earnings_result else 0
+        
+        # Count prescriptions
+        prescription_count = db.session.query(func.count(Prescription.id)).join(
+            Consultation, Prescription.consultation_id == Consultation.id
+        ).filter(
+            Consultation.doctor_id == current_user.doctor.id
+        ).scalar()
+        total_prescriptions = prescription_count if prescription_count else 0
+        
+        # Count total consultations
+        total_consultations_count = db.session.query(func.count(Consultation.id)).filter(
+            Consultation.doctor_id == current_user.doctor.id
+        ).scalar()
+        total_consultations = total_consultations_count if total_consultations_count else 0
+        
+        # Count completed consultations
+        completed_consultations_count = db.session.query(func.count(Consultation.id)).filter(
+            Consultation.doctor_id == current_user.doctor.id,
+            Consultation.status == 'completed'
+        ).scalar()
+        completed_consultations = completed_consultations_count if completed_consultations_count else 0
     
     return render_template('doctor/dashboard.html',
                           title='Doctor Dashboard',
                           upcoming_consultations=upcoming_consultations,
                           pending_requests=pending_requests,
                           recent_payments=recent_payments,
+                          total_prescriptions=total_prescriptions,
+                          total_earnings=total_earnings,
+                          total_consultations=total_consultations,
+                          completed_consultations=completed_consultations,
                           is_verified=is_verified,
                           now=datetime.utcnow,
                           timedelta=timedelta)
