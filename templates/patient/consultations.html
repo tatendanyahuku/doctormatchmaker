@@ -67,6 +67,12 @@
                                             </button>
                                         {% endif %}
                                         
+                                        <form method="post" action="{{ url_for('patient_pay_consultation', consultation_id=consultation.id) }}">
+                                            <button type="submit" class="btn btn-primary mb-2">
+                                                <i class="fas fa-credit-card me-1"></i> Pay Now
+                                            </button>
+                                        </form>
+                                        
                                         <div>
                                             <a href="{{ url_for('patient_consultation_messages', consultation_id=consultation.id) }}" class="btn btn-outline-primary mb-2">
                                                 <i class="fas fa-comments me-1"></i> Messages

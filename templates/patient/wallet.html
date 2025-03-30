@@ -47,7 +47,11 @@
                                         <td>${{ payment.amount }}</td>
                                         <td>
                                             {% if payment.status == 'pending' %}
-                                                <span class="badge bg-warning text-dark">Pending</span>
+                                                {% if payment.consultation.status == 'cancelled' %}
+                                                    <span class="badge bg-secondary">Cancelled</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning text-dark">Pending</span>
+                                                {% endif %}
                                             {% elif payment.status == 'completed' %}
                                                 <span class="badge bg-success">Completed</span>
                                             {% elif payment.status == 'refunded' %}
