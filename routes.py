@@ -177,7 +177,9 @@ def patient_dashboard():
     return render_template('patient/dashboard.html', 
                           title='Patient Dashboard',
                           upcoming_consultations=upcoming_consultations,
-                          recent_prescriptions=recent_prescriptions)
+                          recent_prescriptions=recent_prescriptions,
+                          now=datetime.utcnow,
+                          timedelta=timedelta)
 
 @app.route('/patient/profile', methods=['GET', 'POST'])
 @login_required
@@ -443,7 +445,9 @@ def doctor_dashboard():
                           upcoming_consultations=upcoming_consultations,
                           pending_requests=pending_requests,
                           recent_payments=recent_payments,
-                          is_verified=is_verified)
+                          is_verified=is_verified,
+                          now=datetime.utcnow,
+                          timedelta=timedelta)
 
 @app.route('/doctor/profile', methods=['GET', 'POST'])
 @login_required
