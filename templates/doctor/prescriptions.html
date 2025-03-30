@@ -89,15 +89,14 @@
                 {% set completed_consultations = consultations|selectattr('status', 'equalto', 'completed')|list %}
                 {% set needs_prescription = [] %}
                 
-                {% for consultation in completed_consultations %}
-                    {% if consultation.prescriptions|length == 0 %}
-                        {% do needs_prescription.append(consultation) %}
-                    {% endif %}
-                {% endfor %}
+                {# Create list of consultations needing prescriptions #}
+                {# We'll filter in the template instead #}
                 
-                {% if needs_prescription %}
-                    <div class="list-group">
-                        {% for consultation in needs_prescription %}
+                <div class="list-group">
+                    {% set has_consultations_without_prescriptions = false %}
+                    {% for consultation in completed_consultations %}
+                        {% if consultation.prescriptions|length == 0 %}
+                            {% set has_consultations_without_prescriptions = true %}
                             <div class="list-group-item bg-dark text-light">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
@@ -114,14 +113,16 @@
                                     </div>
                                 </div>
                             </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="alert alert-success">
-                        <i class="fas fa-check-circle me-2"></i>
-                        All completed consultations have prescriptions.
-                    </div>
-                {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if not has_consultations_without_prescriptions %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            All completed consultations have prescriptions.
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>

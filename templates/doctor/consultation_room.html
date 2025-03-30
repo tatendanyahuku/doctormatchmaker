@@ -52,7 +52,7 @@
                 <div class="mt-3 d-flex justify-content-center">
                     <form action="{{ url_for('complete_consultation', consultation_id=consultation.id) }}" method="post">
                         <button type="submit" class="btn btn-success">
-                            <i class="fas fa-check-circle me-1"></i> Complete Consultation
+                            <i class="fas fa-check-circle me-1"></i> End Consultation & Write Prescription
                         </button>
                     </form>
                 </div>
@@ -77,9 +77,19 @@
                     </div>
                 </div>
                 
-                <a href="{{ url_for('create_prescription', consultation_id=consultation.id) }}" class="btn btn-outline-info">
-                    <i class="fas fa-prescription me-1"></i> Create Prescription
-                </a>
+                {% if has_prescription %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i> Prescription already created.
+                    </div>
+                {% elif consultation.status == 'completed' %}
+                    <a href="{{ url_for('create_prescription', consultation_id=consultation.id) }}" class="btn btn-outline-info">
+                        <i class="fas fa-prescription me-1"></i> Create Prescription
+                    </a>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> You can create a prescription after ending the consultation.
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

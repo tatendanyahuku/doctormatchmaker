@@ -733,13 +733,20 @@ def doctor_earnings():
 @login_required
 @verified_doctor_required
 def doctor_prescriptions():
+    # Get all prescriptions for this doctor
     prescriptions = Prescription.query.join(Consultation).filter(
         Consultation.doctor_id == current_user.doctor.id
     ).order_by(Prescription.created_at.desc()).all()
     
+    # Get all consultations for this doctor
+    consultations = Consultation.query.filter(
+        Consultation.doctor_id == current_user.doctor.id
+    ).all()
+    
     return render_template('doctor/prescriptions.html',
                           title='Prescriptions',
-                          prescriptions=prescriptions)
+                          prescriptions=prescriptions,
+                          consultations=consultations)
 
 @app.route('/doctor/consultation/<int:consultation_id>/prescribe', methods=['GET', 'POST'])
 @login_required
@@ -824,9 +831,13 @@ def doctor_consultation_room(consultation_id):
         flash('This consultation is not currently active', 'danger')
         return redirect(url_for('doctor_scheduled_consultations'))
     
+    # Check if there's already a prescription for this consultation
+    has_prescription = Prescription.query.filter_by(consultation_id=consultation.id).first() is not None
+    
     return render_template('doctor/consultation_room.html',
                           title='Consultation Room',
                           consultation=consultation,
+                          has_prescription=has_prescription,
                           now=datetime.utcnow,
                           timedelta=timedelta)
 
@@ -865,8 +876,16 @@ def complete_consultation(consultation_id):
     
     db.session.commit()
     
-    flash('Consultation marked as completed!', 'success')
-    return redirect(url_for('doctor_scheduled_consultations'))
+    flash('Consultation marked as completed! Please create a prescription.', 'success')
+    
+    # Check if there's already a prescription for this consultation
+    has_prescription = Prescription.query.filter_by(consultation_id=consultation.id).first() is not None
+    
+    if has_prescription:
+        return redirect(url_for('doctor_scheduled_consultations'))
+    else:
+        # Redirect to create prescription
+        return redirect(url_for('create_prescription', consultation_id=consultation.id))
 
 # Admin routes
 @app.route('/admin/dashboard')
