@@ -79,7 +79,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="add-funds-form">
+                <form id="add-funds-form" method="post" action="{{ url_for('patient_wallet') }}">
                     <div class="form-group mb-3">
                         <label for="amount" class="form-label">Amount ($)</label>
                         <input type="number" class="form-control" id="amount" name="amount" min="10" step="1" required>
@@ -87,29 +87,31 @@
                     
                     <div class="form-group mb-3">
                         <label for="cardNumber" class="form-label">Card Number</label>
-                        <input type="text" class="form-control" id="cardNumber" placeholder="**** **** **** ****" required>
+                        <input type="text" class="form-control" id="cardNumber" placeholder="**** **** **** ****" value="4242 4242 4242 4242" required>
                     </div>
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="expiryDate" class="form-label">Expiry Date</label>
-                            <input type="text" class="form-control" id="expiryDate" placeholder="MM/YY" required>
+                            <input type="text" class="form-control" id="expiryDate" placeholder="MM/YY" value="12/25" required>
                         </div>
                         <div class="col-md-6">
                             <label for="cvv" class="form-label">CVV</label>
-                            <input type="text" class="form-control" id="cvv" placeholder="***" required>
+                            <input type="text" class="form-control" id="cvv" placeholder="***" value="123" required>
                         </div>
                     </div>
                     
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        This is a demo form. No actual payment will be processed.
+                        This is a demo payment form. No actual payment will be processed.
+                        The amount will be directly added to your wallet balance.
                     </div>
-                </form>
+                
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="alert('Feature not implemented in this demo.')">Add Funds</button>
+                <button type="submit" class="btn btn-primary">Add Funds</button>
+                </form>
             </div>
         </div>
     </div>

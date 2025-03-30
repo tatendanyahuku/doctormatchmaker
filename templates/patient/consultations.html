@@ -58,7 +58,7 @@
                                         {% set time_end = consultation.scheduled_time + timedelta(minutes=15) %}
                                         
                                         {% if time_now >= time_start and time_now <= time_end %}
-                                            <a href="{{ url_for('patient_consultation_room', consultation_id=consultation.id) }}" class="btn btn-success mb-2">
+                                            <a href="{{ url_for('patient_pay_consultation', consultation_id=consultation.id) }}" class="btn btn-success mb-2">
                                                 <i class="fas fa-video me-1"></i> Join Now
                                             </a>
                                         {% else %}

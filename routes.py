@@ -363,7 +363,7 @@ def patient_prescriptions():
                           title='My Prescriptions',
                           prescriptions=prescriptions)
 
-@app.route('/patient/wallet')
+@app.route('/patient/wallet', methods=['GET', 'POST'])
 @login_required
 @patient_required
 def patient_wallet():
@@ -372,10 +372,63 @@ def patient_wallet():
         Consultation.patient_id == current_user.patient.id
     ).order_by(Payment.timestamp.desc()).all()
     
+    # Process adding funds to wallet (simple implementation with dummy payment)
+    if request.method == 'POST':
+        amount = float(request.form.get('amount', 0))
+        if amount > 0:
+            # Add funds to patient's wallet balance (dummy transaction)
+            current_user.patient.wallet_balance += amount
+            db.session.commit()
+            flash(f'Successfully added ${amount:.2f} to your wallet!', 'success')
+            return redirect(url_for('patient_wallet'))
+        else:
+            flash('Please enter a valid amount.', 'danger')
+    
     return render_template('patient/wallet.html',
                           title='My Wallet',
                           wallet_balance=current_user.patient.wallet_balance,
                           payments=payments)
+
+@app.route('/patient/pay-consultation/<int:consultation_id>', methods=['GET', 'POST'])
+@login_required
+@patient_required
+def patient_pay_consultation(consultation_id):
+    consultation = Consultation.query.get_or_404(consultation_id)
+    
+    # Ensure the consultation belongs to the current patient
+    if consultation.patient_id != current_user.patient.id:
+        abort(403)
+    
+    # Get payment
+    payment = Payment.query.filter_by(consultation_id=consultation.id).first()
+    
+    if not payment:
+        flash('Payment not found for this consultation', 'danger')
+        return redirect(url_for('patient_consultations'))
+    
+    if payment.status == 'completed':
+        # Payment already completed, redirect to consultation room
+        return redirect(url_for('patient_consultation_room', consultation_id=consultation_id))
+    
+    # Process payment
+    if request.method == 'POST':
+        # In a real application, this would integrate with a payment gateway
+        # For now, we'll just mark the payment as completed
+        
+        payment.status = 'completed'
+        
+        # Deduct from patient's wallet (in a real app you would use actual payment processor)
+        current_user.patient.wallet_balance -= consultation.final_fee
+        
+        db.session.commit()
+        
+        flash('Payment successful! You can now join the consultation.', 'success')
+        return redirect(url_for('patient_consultation_room', consultation_id=consultation_id))
+    
+    return render_template('patient/pay_consultation.html',
+                          title='Pay for Consultation',
+                          consultation=consultation,
+                          payment=payment)
 
 @app.route('/patient/consultation-room/<int:consultation_id>')
 @login_required
@@ -395,6 +448,13 @@ def patient_consultation_room(consultation_id):
     if consultation.status != 'accepted' or now < time_window_start or now > time_window_end:
         flash('This consultation is not currently active', 'danger')
         return redirect(url_for('patient_consultations'))
+    
+    # Check if payment is completed
+    payment = Payment.query.filter_by(consultation_id=consultation.id).first()
+    
+    if not payment or payment.status != 'completed':
+        flash('You need to complete payment before joining the consultation', 'warning')
+        return redirect(url_for('patient_pay_consultation', consultation_id=consultation_id))
     
     return render_template('patient/consultation_room.html',
                           title='Consultation Room',

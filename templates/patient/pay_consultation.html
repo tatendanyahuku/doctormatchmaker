@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+
+{% block title %}Pay for Consultation - MedConsult{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Pay for Consultation</h1>
+            <a href="{{ url_for('patient_consultations') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Consultations
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card bg-dark text-light mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Consultation Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Doctor:</strong> Dr. {{ consultation.doctor.first_name }} {{ consultation.doctor.last_name }}</p>
+                        <p class="mb-1"><strong>Specialty:</strong> {{ consultation.doctor.specialty }}</p>
+                        <p class="mb-1">
+                            <strong>Scheduled Time:</strong> {{ consultation.scheduled_time.strftime('%B %d, %Y at %I:%M %p') }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1 fs-4">
+                            <strong>Fee:</strong> <span class="text-primary">${{ consultation.final_fee }}</span>
+                        </p>
+                        <p class="mb-1"><strong>Payment Status:</strong> 
+                            <span class="badge {% if payment.status == 'pending' %}bg-warning{% else %}bg-success{% endif %}">
+                                {{ payment.status|capitalize }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    You must complete payment before joining the video consultation.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-5">
+        <div class="card bg-dark text-light">
+            <div class="card-header">
+                <h5 class="mb-0">Payment</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-primary mb-3">
+                    <i class="fas fa-wallet me-2"></i>
+                    Your wallet balance: <strong>${{ current_user.patient.wallet_balance }}</strong>
+                </div>
+                
+                {% if current_user.patient.wallet_balance < consultation.final_fee %}
+                    <div class="alert alert-danger mb-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Insufficient balance. Please add funds to your wallet.
+                    </div>
+                    <a href="{{ url_for('patient_wallet') }}" class="btn btn-success w-100">
+                        <i class="fas fa-plus-circle me-1"></i> Add Funds to Wallet
+                    </a>
+                {% else %}
+                    <form method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Amount to Pay</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="text" class="form-control" value="{{ consultation.final_fee }}" disabled>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-credit-card me-1"></i> Complete Payment
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
