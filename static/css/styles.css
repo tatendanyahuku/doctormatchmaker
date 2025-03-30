@@ -1,0 +1,159 @@
+/* MedConsult Custom Styles */
+
+/* Video Consultation */
+.video-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background-color: var(--bs-gray-900);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.video-box {
+    position: absolute;
+    background-color: var(--bs-gray-800);
+    overflow: hidden;
+    border-radius: 4px;
+}
+
+.video-box.remote {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.video-box.local {
+    bottom: 10px;
+    right: 10px;
+    width: 25%;
+    height: 25%;
+    z-index: 2;
+    border: 2px solid var(--bs-primary);
+}
+
+.video-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Chat styles */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+    background-color: var(--bs-gray-900);
+}
+
+.messages-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.message-form {
+    padding: 10px;
+    border-top: 1px solid var(--bs-gray-700);
+}
+
+.message {
+    margin-bottom: 15px;
+    max-width: 80%;
+}
+
+.message.sent {
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.message.received {
+    align-self: flex-start;
+    margin-right: auto;
+}
+
+.message-content {
+    padding: 10px;
+    border-radius: 6px;
+    word-break: break-word;
+}
+
+.message.sent .message-content {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+.message.received .message-content {
+    background-color: var(--bs-gray-700);
+    color: white;
+}
+
+.message-meta {
+    font-size: 0.75rem;
+    margin-top: 4px;
+    color: var(--bs-gray-500);
+}
+
+/* Dashboard cards */
+.dashboard-card {
+    transition: transform 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Profile styling */
+.profile-section {
+    background-color: var(--bs-gray-800);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Prescription styling */
+.prescription {
+    background-color: white;
+    color: var(--bs-dark);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.prescription-header {
+    border-bottom: 2px solid var(--bs-primary);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.prescription-footer {
+    border-top: 1px solid var(--bs-gray-300);
+    margin-top: 20px;
+    padding-top: 10px;
+}
+
+.signature-container {
+    height: 200px;
+    background-color: white;
+    border: 1px solid var(--bs-gray-400);
+    border-radius: 4px;
+}
+
+/* Admin dashboard */
+.stat-card {
+    border-left: 4px solid var(--bs-primary);
+}
+
+.chart-container {
+    height: 300px;
+}
