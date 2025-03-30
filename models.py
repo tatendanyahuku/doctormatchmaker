@@ -84,7 +84,6 @@ class Consultation(db.Model):
     final_fee = db.Column(db.Float, nullable=True)
     scheduled_time = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     completed_at = db.Column(db.DateTime, nullable=True)
     
     # Relationships

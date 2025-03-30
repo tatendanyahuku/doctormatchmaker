@@ -170,7 +170,7 @@
                                         {% elif consultation.status == 'cancelled' %}
                                             <p class="mb-1">
                                                 <i class="fas fa-calendar-times me-2"></i>
-                                                Cancelled: {{ consultation.updated_at.strftime('%B %d, %Y') }}
+                                                Cancelled: {{ consultation.created_at.strftime('%B %d, %Y') }}
                                             </p>
                                             <p class="mb-0">
                                                 <span class="badge bg-secondary">Cancelled</span>
