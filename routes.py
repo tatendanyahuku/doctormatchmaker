@@ -31,6 +31,18 @@ def doctor_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def verified_doctor_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role != 'doctor':
+            flash('Access denied: Doctor access required', 'danger')
+            return redirect(url_for('login'))
+        if not current_user.doctor.is_verified:
+            flash('Access denied: Your account needs to be verified by an administrator before you can access this feature', 'warning')
+            return redirect(url_for('doctor_dashboard'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -393,35 +405,45 @@ def patient_consultation_room(consultation_id):
 @login_required
 @doctor_required
 def doctor_dashboard():
+    is_verified = current_user.doctor.is_verified
+    
     # Check if doctor is verified
-    if not current_user.doctor.is_verified:
-        flash('Your account is pending verification by admin', 'warning')
+    if not is_verified:
+        flash('Your account is pending verification by an administrator. You will not be able to manage consultations until your account is verified.', 'warning')
     
     # Get upcoming consultations
-    upcoming_consultations = Consultation.query.filter_by(
-        doctor_id=current_user.doctor.id,
-        status='accepted'
-    ).filter(
-        Consultation.scheduled_time > datetime.utcnow()
-    ).order_by(Consultation.scheduled_time).all()
+    upcoming_consultations = []
+    pending_requests = []
+    recent_payments = []
     
-    # Get pending requests
-    pending_requests = Consultation.query.filter_by(
-        doctor_id=current_user.doctor.id,
-        status='requested'
-    ).order_by(Consultation.created_at.desc()).all()
-    
-    # Get recent earnings
-    recent_payments = Payment.query.join(Consultation).filter(
-        Consultation.doctor_id == current_user.doctor.id,
-        Payment.status == 'completed'
-    ).order_by(Payment.timestamp.desc()).limit(5).all()
+    # Only fetch data if doctor is verified
+    if is_verified:
+        # Get upcoming consultations
+        upcoming_consultations = Consultation.query.filter_by(
+            doctor_id=current_user.doctor.id,
+            status='accepted'
+        ).filter(
+            Consultation.scheduled_time > datetime.utcnow()
+        ).order_by(Consultation.scheduled_time).all()
+        
+        # Get pending requests
+        pending_requests = Consultation.query.filter_by(
+            doctor_id=current_user.doctor.id,
+            status='requested'
+        ).order_by(Consultation.created_at.desc()).all()
+        
+        # Get recent earnings
+        recent_payments = Payment.query.join(Consultation).filter(
+            Consultation.doctor_id == current_user.doctor.id,
+            Payment.status == 'completed'
+        ).order_by(Payment.timestamp.desc()).limit(5).all()
     
     return render_template('doctor/dashboard.html',
                           title='Doctor Dashboard',
                           upcoming_consultations=upcoming_consultations,
                           pending_requests=pending_requests,
-                          recent_payments=recent_payments)
+                          recent_payments=recent_payments,
+                          is_verified=is_verified)
 
 @app.route('/doctor/profile', methods=['GET', 'POST'])
 @login_required
@@ -478,7 +500,7 @@ def doctor_profile():
 
 @app.route('/doctor/pending-requests')
 @login_required
-@doctor_required
+@verified_doctor_required
 def doctor_pending_requests():
     pending_requests = Consultation.query.filter_by(
         doctor_id=current_user.doctor.id,
@@ -492,7 +514,7 @@ def doctor_pending_requests():
 
 @app.route('/doctor/consultation/<int:consultation_id>/respond', methods=['POST'])
 @login_required
-@doctor_required
+@verified_doctor_required
 def respond_to_consultation(consultation_id):
     consultation = Consultation.query.get_or_404(consultation_id)
     
@@ -528,7 +550,7 @@ def respond_to_consultation(consultation_id):
 
 @app.route('/doctor/scheduled-consultations')
 @login_required
-@doctor_required
+@verified_doctor_required
 def doctor_scheduled_consultations():
     consultations = Consultation.query.filter_by(
         doctor_id=current_user.doctor.id,
@@ -543,7 +565,7 @@ def doctor_scheduled_consultations():
 
 @app.route('/doctor/messages')
 @login_required
-@doctor_required
+@verified_doctor_required
 def doctor_messages():
     consultations = Consultation.query.filter_by(
         doctor_id=current_user.doctor.id
@@ -555,7 +577,7 @@ def doctor_messages():
 
 @app.route('/doctor/consultation/<int:consultation_id>/messages', methods=['GET', 'POST'])
 @login_required
-@doctor_required
+@verified_doctor_required
 def doctor_consultation_messages(consultation_id):
     consultation = Consultation.query.get_or_404(consultation_id)
     
@@ -590,7 +612,7 @@ def doctor_consultation_messages(consultation_id):
 
 @app.route('/doctor/earnings')
 @login_required
-@doctor_required
+@verified_doctor_required
 def doctor_earnings():
     # Get all payments for completed consultations
     payments = Payment.query.join(Consultation).filter(
@@ -608,7 +630,7 @@ def doctor_earnings():
 
 @app.route('/doctor/prescriptions')
 @login_required
-@doctor_required
+@verified_doctor_required
 def doctor_prescriptions():
     prescriptions = Prescription.query.join(Consultation).filter(
         Consultation.doctor_id == current_user.doctor.id
@@ -620,7 +642,7 @@ def doctor_prescriptions():
 
 @app.route('/doctor/consultation/<int:consultation_id>/prescribe', methods=['GET', 'POST'])
 @login_required
-@doctor_required
+@verified_doctor_required
 def create_prescription(consultation_id):
     consultation = Consultation.query.get_or_404(consultation_id)
     
@@ -659,7 +681,7 @@ def create_prescription(consultation_id):
 
 @app.route('/doctor/consultation-room/<int:consultation_id>')
 @login_required
-@doctor_required
+@verified_doctor_required
 def doctor_consultation_room(consultation_id):
     consultation = Consultation.query.get_or_404(consultation_id)
     
@@ -684,7 +706,7 @@ def doctor_consultation_room(consultation_id):
 
 @app.route('/doctor/consultation/<int:consultation_id>/complete', methods=['POST'])
 @login_required
-@doctor_required
+@verified_doctor_required
 def complete_consultation(consultation_id):
     consultation = Consultation.query.get_or_404(consultation_id)
     
@@ -830,6 +852,15 @@ def admin_metrics():
     consultations = [metric.completed_consultations for metric in daily_metrics]
     revenue = [metric.total_revenue for metric in daily_metrics]
     
+    # Get specialty distribution data
+    specialty_data = db.session.query(
+        Doctor.specialty, 
+        func.count(Doctor.id).label('count')
+    ).group_by(Doctor.specialty).all()
+    
+    specialties = [item[0] for item in specialty_data]
+    counts = [item[1] for item in specialty_data]
+    
     return render_template('admin/metrics.html',
                           title='System Metrics',
                           daily_metrics=daily_metrics,
@@ -837,7 +868,9 @@ def admin_metrics():
                           new_patients=new_patients,
                           new_doctors=new_doctors,
                           consultations=consultations,
-                          revenue=revenue)
+                          revenue=revenue,
+                          specialties=specialties,
+                          counts=counts)
 
 @app.route('/admin/specialty-fee-ranges', methods=['GET', 'POST'])
 @login_required
@@ -885,6 +918,10 @@ def join_consultation(consultation_id):
     
     if not (is_doctor or is_patient):
         return jsonify({'error': 'Unauthorized access'}), 403
+        
+    # Ensure doctor is verified if user is a doctor
+    if is_doctor and not current_user.doctor.is_verified:
+        return jsonify({'error': 'Your account needs to be verified before you can join consultations'}), 403
     
     # Ensure the consultation is scheduled and within time window
     now = datetime.utcnow()
@@ -917,6 +954,10 @@ def get_consultation_messages(consultation_id):
     
     if not (is_doctor or is_patient):
         return jsonify({'error': 'Unauthorized access'}), 403
+        
+    # Ensure doctor is verified if user is a doctor
+    if is_doctor and not current_user.doctor.is_verified:
+        return jsonify({'error': 'Your account needs to be verified before you can access consultation messages'}), 403
     
     # Get all messages for this consultation
     messages = Message.query.filter_by(consultation_id=consultation_id).order_by(Message.timestamp).all()
@@ -950,6 +991,10 @@ def send_consultation_message(consultation_id):
     
     if not (is_doctor or is_patient):
         return jsonify({'error': 'Unauthorized access'}), 403
+        
+    # Ensure doctor is verified if user is a doctor
+    if is_doctor and not current_user.doctor.is_verified:
+        return jsonify({'error': 'Your account needs to be verified before you can send messages'}), 403
     
     data = request.json
     content = data.get('content')
@@ -989,6 +1034,10 @@ def create_offer(consultation_id):
     
     if not (is_doctor or is_patient):
         return jsonify({'error': 'Unauthorized access'}), 403
+        
+    # Ensure doctor is verified if user is a doctor
+    if is_doctor and not current_user.doctor.is_verified:
+        return jsonify({'error': 'Your account needs to be verified before you can participate in video consultations'}), 403
     
     data = request.json
     offer = data.get('offer')
@@ -1015,6 +1064,10 @@ def create_answer(consultation_id):
     
     if not (is_doctor or is_patient):
         return jsonify({'error': 'Unauthorized access'}), 403
+        
+    # Ensure doctor is verified if user is a doctor
+    if is_doctor and not current_user.doctor.is_verified:
+        return jsonify({'error': 'Your account needs to be verified before you can participate in video consultations'}), 403
     
     data = request.json
     answer = data.get('answer')
@@ -1041,6 +1094,10 @@ def add_ice_candidate(consultation_id):
     
     if not (is_doctor or is_patient):
         return jsonify({'error': 'Unauthorized access'}), 403
+        
+    # Ensure doctor is verified if user is a doctor
+    if is_doctor and not current_user.doctor.is_verified:
+        return jsonify({'error': 'Your account needs to be verified before you can participate in video consultations'}), 403
     
     data = request.json
     candidate = data.get('candidate')
