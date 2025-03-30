@@ -412,13 +412,25 @@ def patient_pay_consultation(consultation_id):
     
     # Process payment
     if request.method == 'POST':
-        # In a real application, this would integrate with a payment gateway
-        # For now, we'll just mark the payment as completed
+        # Check if patient has enough balance
+        if current_user.patient.wallet_balance < consultation.final_fee:
+            flash('Insufficient wallet balance. Please add funds to your wallet.', 'danger')
+            return redirect(url_for('patient_wallet'))
         
+        # In a real application, this would integrate with a payment gateway
+        # For now, we'll just mark the payment as completed and transfer funds
+        
+        # Deduct from patient's wallet
+        current_user.patient.wallet_balance -= consultation.final_fee
+        
+        # Complete the payment
         payment.status = 'completed'
         
-        # Deduct from patient's wallet (in a real app you would use actual payment processor)
-        current_user.patient.wallet_balance -= consultation.final_fee
+        # Update system metrics (if it exists for today)
+        today = datetime.utcnow().date()
+        metrics = SystemMetrics.query.filter_by(date=today).first()
+        if metrics:
+            metrics.total_revenue += consultation.final_fee
         
         db.session.commit()
         
