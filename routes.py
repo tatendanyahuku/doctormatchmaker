@@ -286,7 +286,9 @@ def patient_consultations():
     
     return render_template('patient/consultations.html',
                           title='My Consultations',
-                          consultations=consultations)
+                          consultations=consultations,
+                          now=datetime.utcnow,
+                          timedelta=timedelta)
 
 @app.route('/patient/messages')
 @login_required
@@ -331,7 +333,9 @@ def patient_consultation_messages(consultation_id):
                           title='Consultation Messages',
                           consultation=consultation,
                           messages=messages,
-                          form=form)
+                          form=form,
+                          now=datetime.utcnow,
+                          timedelta=timedelta)
 
 @app.route('/patient/prescriptions')
 @login_required
@@ -380,7 +384,9 @@ def patient_consultation_room(consultation_id):
     
     return render_template('patient/consultation_room.html',
                           title='Consultation Room',
-                          consultation=consultation)
+                          consultation=consultation,
+                          now=datetime.utcnow,
+                          timedelta=timedelta)
 
 # Doctor routes
 @app.route('/doctor/dashboard')
@@ -481,7 +487,8 @@ def doctor_pending_requests():
     
     return render_template('doctor/pending_requests.html',
                           title='Pending Requests',
-                          pending_requests=pending_requests)
+                          pending_requests=pending_requests,
+                          now=datetime.utcnow)
 
 @app.route('/doctor/consultation/<int:consultation_id>/respond', methods=['POST'])
 @login_required
@@ -530,7 +537,9 @@ def doctor_scheduled_consultations():
     
     return render_template('doctor/scheduled_consultations.html',
                           title='Scheduled Consultations',
-                          consultations=consultations)
+                          consultations=consultations,
+                          now=datetime.utcnow,
+                          timedelta=timedelta)
 
 @app.route('/doctor/messages')
 @login_required
@@ -575,7 +584,9 @@ def doctor_consultation_messages(consultation_id):
                           title='Consultation Messages',
                           consultation=consultation,
                           messages=messages,
-                          form=form)
+                          form=form,
+                          now=datetime.utcnow,
+                          timedelta=timedelta)
 
 @app.route('/doctor/earnings')
 @login_required
@@ -643,7 +654,8 @@ def create_prescription(consultation_id):
     return render_template('doctor/create_prescription.html',
                           title='Create Prescription',
                           form=form,
-                          consultation=consultation)
+                          consultation=consultation,
+                          now=datetime.utcnow)
 
 @app.route('/doctor/consultation-room/<int:consultation_id>')
 @login_required
@@ -666,7 +678,9 @@ def doctor_consultation_room(consultation_id):
     
     return render_template('doctor/consultation_room.html',
                           title='Consultation Room',
-                          consultation=consultation)
+                          consultation=consultation,
+                          now=datetime.utcnow,
+                          timedelta=timedelta)
 
 @app.route('/doctor/consultation/<int:consultation_id>/complete', methods=['POST'])
 @login_required
@@ -731,6 +745,15 @@ def admin_dashboard():
         SystemMetrics.date <= today
     ).order_by(SystemMetrics.date).all()
     
+    # Get specialty distribution data
+    specialty_data = db.session.query(
+        Doctor.specialty, 
+        func.count(Doctor.id).label('count')
+    ).group_by(Doctor.specialty).all()
+    
+    specialties = [item[0] for item in specialty_data]
+    counts = [item[1] for item in specialty_data]
+    
     return render_template('admin/dashboard.html',
                           title='Admin Dashboard',
                           patient_count=patient_count,
@@ -740,7 +763,9 @@ def admin_dashboard():
                           total_consultations=total_consultations,
                           completed_consultations=completed_consultations,
                           total_revenue=total_revenue,
-                          daily_metrics=daily_metrics)
+                          daily_metrics=daily_metrics,
+                          specialties=specialties,
+                          counts=counts)
 
 @app.route('/admin/doctor-verification')
 @login_required

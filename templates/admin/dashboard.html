@@ -119,8 +119,8 @@
             <div class="card-body">
                 <div id="specialty-distribution-container" 
                      class="chart-container"
-                     data-specialties="{{ Doctor.query.with_entities(Doctor.specialty, func.count(Doctor.id).label('count')).group_by(Doctor.specialty).all()|map(attribute='specialty')|list|tojson }}"
-                     data-counts="{{ Doctor.query.with_entities(Doctor.specialty, func.count(Doctor.id).label('count')).group_by(Doctor.specialty).all()|map(attribute='count')|list|tojson }}">
+                     data-specialties="{{ specialties|tojson }}"
+                     data-counts="{{ counts|tojson }}">
                     <canvas id="specialty-distribution-chart" height="250"></canvas>
                 </div>
             </div>
