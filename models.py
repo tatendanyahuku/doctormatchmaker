@@ -115,16 +115,29 @@ class Prescription(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     consultation_id = db.Column(db.Integer, db.ForeignKey('consultations.id'), nullable=False)
-    medication = db.Column(db.String(100), nullable=False)
-    dosage = db.Column(db.String(100), nullable=False)
-    frequency = db.Column(db.String(100), nullable=False)
-    duration = db.Column(db.String(100), nullable=False)
     instructions = db.Column(db.Text, nullable=True)
     signature = db.Column(db.Text, nullable=False)  # Doctor's electronic signature
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # Relationship with prescription medications
+    medications = db.relationship('PrescriptionMedication', backref='prescription', lazy=True, cascade="all, delete-orphan")
+    
     def __repr__(self):
-        return f"Prescription(Consultation: {self.consultation_id}, Medication: {self.medication})"
+        return f"Prescription(Consultation: {self.consultation_id}, Medications: {len(self.medications)})"
+
+
+class PrescriptionMedication(db.Model):
+    __tablename__ = 'prescription_medications'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    prescription_id = db.Column(db.Integer, db.ForeignKey('prescriptions.id'), nullable=False)
+    medication = db.Column(db.String(100), nullable=False)
+    dosage = db.Column(db.String(100), nullable=False)
+    frequency = db.Column(db.String(100), nullable=False)
+    duration = db.Column(db.String(100), nullable=False)
+    
+    def __repr__(self):
+        return f"PrescriptionMedication(Medication: {self.medication}, Dosage: {self.dosage})"
 
 
 class Payment(db.Model):

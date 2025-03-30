@@ -50,70 +50,48 @@
                 <form method="POST" action="" id="prescription-form">
                     {{ form.hidden_tag() }}
                     
-                    <div class="row mb-3">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                {{ form.medication.label(class="form-label required") }}
-                                {% if form.medication.errors %}
-                                    {{ form.medication(class="form-control is-invalid") }}
-                                    <div class="invalid-feedback">
-                                        {% for error in form.medication.errors %}
-                                            <span>{{ error }}</span>
-                                        {% endfor %}
+                    <div id="medications-container">
+                        <h5 class="mb-3">Medications</h5>
+                        
+                        <div class="medication-entry card bg-dark border-secondary mb-3">
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="medication-0" class="form-label required">Medication</label>
+                                            <input type="text" id="medication-0" name="medication-0" class="form-control" required maxlength="100">
+                                        </div>
                                     </div>
-                                {% else %}
-                                    {{ form.medication(class="form-control") }}
-                                {% endif %}
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="dosage-0" class="form-label required">Dosage</label>
+                                            <input type="text" id="dosage-0" name="dosage-0" class="form-control" required maxlength="100" placeholder="e.g., 500mg">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="frequency-0" class="form-label required">Frequency</label>
+                                            <input type="text" id="frequency-0" name="frequency-0" class="form-control" required maxlength="100" placeholder="e.g., Twice daily">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="duration-0" class="form-label required">Duration</label>
+                                            <input type="text" id="duration-0" name="duration-0" class="form-control" required maxlength="100" placeholder="e.g., 7 days">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                {{ form.dosage.label(class="form-label required") }}
-                                {% if form.dosage.errors %}
-                                    {{ form.dosage(class="form-control is-invalid") }}
-                                    <div class="invalid-feedback">
-                                        {% for error in form.dosage.errors %}
-                                            <span>{{ error }}</span>
-                                        {% endfor %}
-                                    </div>
-                                {% else %}
-                                    {{ form.dosage(class="form-control", placeholder="e.g., 500mg") }}
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                {{ form.frequency.label(class="form-label required") }}
-                                {% if form.frequency.errors %}
-                                    {{ form.frequency(class="form-control is-invalid") }}
-                                    <div class="invalid-feedback">
-                                        {% for error in form.frequency.errors %}
-                                            <span>{{ error }}</span>
-                                        {% endfor %}
-                                    </div>
-                                {% else %}
-                                    {{ form.frequency(class="form-control", placeholder="e.g., Twice daily") }}
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                {{ form.duration.label(class="form-label required") }}
-                                {% if form.duration.errors %}
-                                    {{ form.duration(class="form-control is-invalid") }}
-                                    <div class="invalid-feedback">
-                                        {% for error in form.duration.errors %}
-                                            <span>{{ error }}</span>
-                                        {% endfor %}
-                                    </div>
-                                {% else %}
-                                    {{ form.duration(class="form-control", placeholder="e.g., 7 days") }}
-                                {% endif %}
-                            </div>
-                        </div>
+                    <div class="d-grid mb-4">
+                        <button type="button" id="add-medication-btn" class="btn btn-outline-primary">
+                            <i class="fas fa-plus-circle me-1"></i> Add Another Medication
+                        </button>
                     </div>
                     
                     <div class="form-group mb-3">
@@ -165,6 +143,114 @@
 </div>
 {% endblock %}
 
+{% block styles %}
+{{ super() }}
+<style>
+    .medication-entry {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .medication-entry:hover {
+        border-color: var(--bs-primary) !important;
+    }
+    
+    .remove-medication-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10;
+    }
+    
+    .form-label.required:after {
+        content: " *";
+        color: var(--bs-danger);
+    }
+    
+    .signature-canvas {
+        width: 100%;
+        height: 150px;
+        border: 1px solid var(--bs-gray-600);
+        border-radius: 4px;
+        background-color: var(--bs-dark);
+    }
+</style>
+{% endblock %}
+
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/signature.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const medicationsContainer = document.getElementById('medications-container');
+        const addMedicationBtn = document.getElementById('add-medication-btn');
+        let medicationCounter = 1;
+        
+        // Add medication entry when button is clicked
+        addMedicationBtn.addEventListener('click', function() {
+            const entry = document.createElement('div');
+            entry.className = 'medication-entry card bg-dark border-secondary mb-3';
+            entry.innerHTML = `
+                <div class="card-body">
+                    <div class="d-flex justify-content-end mb-2">
+                        <button type="button" class="btn btn-sm btn-danger remove-medication-btn">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="medication-${medicationCounter}" class="form-label required">Medication</label>
+                                <input type="text" id="medication-${medicationCounter}" name="medication-${medicationCounter}" class="form-control" required maxlength="100">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="dosage-${medicationCounter}" class="form-label required">Dosage</label>
+                                <input type="text" id="dosage-${medicationCounter}" name="dosage-${medicationCounter}" class="form-control" required maxlength="100" placeholder="e.g., 500mg">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="frequency-${medicationCounter}" class="form-label required">Frequency</label>
+                                <input type="text" id="frequency-${medicationCounter}" name="frequency-${medicationCounter}" class="form-control" required maxlength="100" placeholder="e.g., Twice daily">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="duration-${medicationCounter}" class="form-label required">Duration</label>
+                                <input type="text" id="duration-${medicationCounter}" name="duration-${medicationCounter}" class="form-control" required maxlength="100" placeholder="e.g., 7 days">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            medicationsContainer.appendChild(entry);
+            medicationCounter++;
+            
+            // Add event listener to remove button
+            const removeBtn = entry.querySelector('.remove-medication-btn');
+            removeBtn.addEventListener('click', function() {
+                entry.remove();
+            });
+        });
+        
+        // Add a hidden count field to the form before submission
+        const form = document.getElementById('prescription-form');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Create hidden field for medication count
+            const countField = document.createElement('input');
+            countField.type = 'hidden';
+            countField.name = 'medication_count';
+            countField.value = document.querySelectorAll('.medication-entry').length;
+            form.appendChild(countField);
+            
+            form.submit();
+        });
+    });
+</script>
 {% endblock %}

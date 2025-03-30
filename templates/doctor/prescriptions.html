@@ -30,7 +30,7 @@
                                 <div class="card prescription-card bg-dark text-light">
                                     <div class="card-header prescription-header">
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <h5 class="mb-0">{{ prescription.medication }}</h5>
+                                            <h5 class="mb-0">Prescription #{{ prescription.id }}</h5>
                                             <span class="badge bg-primary">{{ prescription.created_at.strftime('%B %d, %Y') }}</span>
                                         </div>
                                         <p class="mb-0 text-muted">
@@ -39,20 +39,28 @@
                                         </p>
                                     </div>
                                     <div class="card-body prescription-content">
-                                        <div class="row mb-3">
-                                            <div class="col-md-4">
-                                                <p class="mb-1"><strong>Dosage:</strong></p>
-                                                <p>{{ prescription.dosage }}</p>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <p class="mb-1"><strong>Frequency:</strong></p>
-                                                <p>{{ prescription.frequency }}</p>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <p class="mb-1"><strong>Duration:</strong></p>
-                                                <p>{{ prescription.duration }}</p>
+                                        <h6 class="mb-3">Medications:</h6>
+                                        {% for medication in prescription.medications %}
+                                        <div class="card bg-dark border-secondary mb-3">
+                                            <div class="card-body">
+                                                <h6 class="card-title">{{ medication.medication }}</h6>
+                                                <div class="row mb-2">
+                                                    <div class="col-md-4">
+                                                        <p class="mb-1"><strong>Dosage:</strong></p>
+                                                        <p>{{ medication.dosage }}</p>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <p class="mb-1"><strong>Frequency:</strong></p>
+                                                        <p>{{ medication.frequency }}</p>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <p class="mb-1"><strong>Duration:</strong></p>
+                                                        <p>{{ medication.duration }}</p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
+                                        {% endfor %}
                                         
                                         <div class="mb-3">
                                             <p class="mb-1"><strong>Instructions:</strong></p>

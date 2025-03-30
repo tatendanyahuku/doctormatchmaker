@@ -114,12 +114,14 @@
         
         <div class="prescription-details">
             <h3>Medication Details:</h3>
+            {% for medication in prescription.medications %}
             <div class="prescription-item">
-                <p><span class="label">Medication:</span> {{ prescription.medication }}</p>
-                <p><span class="label">Dosage:</span> {{ prescription.dosage }}</p>
-                <p><span class="label">Frequency:</span> {{ prescription.frequency }}</p>
-                <p><span class="label">Duration:</span> {{ prescription.duration }}</p>
+                <p><span class="label">Medication:</span> {{ medication.medication }}</p>
+                <p><span class="label">Dosage:</span> {{ medication.dosage }}</p>
+                <p><span class="label">Frequency:</span> {{ medication.frequency }}</p>
+                <p><span class="label">Duration:</span> {{ medication.duration }}</p>
             </div>
+            {% endfor %}
         </div>
         
         {% if prescription.instructions %}

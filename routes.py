@@ -8,7 +8,7 @@ from sqlalchemy import func, desc
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import app, db
-from models import User, Patient, Doctor, Consultation, Message, Prescription, Payment, SpecialtyFeeRange, SystemMetrics
+from models import User, Patient, Doctor, Consultation, Message, Prescription, PrescriptionMedication, Payment, SpecialtyFeeRange, SystemMetrics
 from forms import (RegistrationForm, LoginForm, PatientProfileForm, DoctorProfileForm, SearchDoctorForm,
                   ConsultationRequestForm, PrescriptionForm, MessageForm, DoctorVerificationForm, SpecialtyFeeRangeForm)
 
@@ -765,21 +765,41 @@ def create_prescription(consultation_id):
     
     form = PrescriptionForm()
     
-    if form.validate_on_submit():
-        prescription = Prescription(
-            consultation_id=consultation.id,
-            medication=form.medication.data,
-            dosage=form.dosage.data,
-            frequency=form.frequency.data,
-            duration=form.duration.data,
-            instructions=form.instructions.data,
-            signature=form.signature.data
-        )
-        db.session.add(prescription)
-        db.session.commit()
-        
-        flash('Prescription created successfully!', 'success')
-        return redirect(url_for('doctor_prescriptions'))
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            # Create the main prescription
+            prescription = Prescription(
+                consultation_id=consultation.id,
+                instructions=form.instructions.data,
+                signature=form.signature.data
+            )
+            db.session.add(prescription)
+            db.session.flush()  # Get the prescription ID
+            
+            # Get the medication count from the form
+            medication_count = int(request.form.get('medication_count', 1))
+            
+            # Add all medications
+            for i in range(medication_count):
+                medication_name = request.form.get(f'medication-{i}')
+                dosage = request.form.get(f'dosage-{i}')
+                frequency = request.form.get(f'frequency-{i}')
+                duration = request.form.get(f'duration-{i}')
+                
+                if medication_name and dosage and frequency and duration:
+                    medication = PrescriptionMedication(
+                        prescription_id=prescription.id,
+                        medication=medication_name,
+                        dosage=dosage,
+                        frequency=frequency,
+                        duration=duration
+                    )
+                    db.session.add(medication)
+            
+            db.session.commit()
+            
+            flash('Prescription created successfully!', 'success')
+            return redirect(url_for('doctor_prescriptions'))
     
     return render_template('doctor/create_prescription.html',
                           title='Create Prescription',

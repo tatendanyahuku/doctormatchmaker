@@ -74,11 +74,13 @@ class ConsultationRequestForm(FlaskForm):
     submit = SubmitField('Request Consultation')
 
 
-class PrescriptionForm(FlaskForm):
+class MedicationForm(FlaskForm):
     medication = StringField('Medication', validators=[DataRequired(), Length(max=100)])
     dosage = StringField('Dosage', validators=[DataRequired(), Length(max=100)])
     frequency = StringField('Frequency', validators=[DataRequired(), Length(max=100)])
     duration = StringField('Duration', validators=[DataRequired(), Length(max=100)])
+
+class PrescriptionForm(FlaskForm):
     instructions = TextAreaField('Instructions')
     signature = TextAreaField('Signature', validators=[DataRequired()])
     submit = SubmitField('Submit Prescription')
