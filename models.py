@@ -136,6 +136,9 @@ class Payment(db.Model):
     status = db.Column(db.String(50), default='pending')  # pending, completed, refunded
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # Add relationship to consultation
+    consultation = db.relationship('Consultation', foreign_keys=[consultation_id])
+    
     def __repr__(self):
         return f"Payment(Consultation: {self.consultation_id}, Amount: {self.amount}, Status: {self.status})"
 
