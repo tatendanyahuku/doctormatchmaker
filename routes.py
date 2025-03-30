@@ -481,12 +481,8 @@ def patient_consultation_room(consultation_id):
     if consultation.patient_id != current_user.patient.id:
         abort(403)
     
-    # Ensure the consultation is scheduled and within time window (15 min before to 15 min after)
-    now = datetime.utcnow()
-    time_window_start = consultation.scheduled_time - timedelta(minutes=15)
-    time_window_end = consultation.scheduled_time + timedelta(minutes=15)
-    
-    if consultation.status != 'accepted' or now < time_window_start or now > time_window_end:
+    # Only check if the consultation is accepted
+    if consultation.status != 'accepted':
         flash('This consultation is not currently active', 'danger')
         return redirect(url_for('patient_consultations'))
     
@@ -794,12 +790,8 @@ def doctor_consultation_room(consultation_id):
     if consultation.doctor_id != current_user.doctor.id:
         abort(403)
     
-    # Ensure the consultation is scheduled and within time window
-    now = datetime.utcnow()
-    time_window_start = consultation.scheduled_time - timedelta(minutes=15)
-    time_window_end = consultation.scheduled_time + timedelta(minutes=15)
-    
-    if consultation.status != 'accepted' or now < time_window_start or now > time_window_end:
+    # Only check if the consultation is accepted
+    if consultation.status != 'accepted':
         flash('This consultation is not currently active', 'danger')
         return redirect(url_for('doctor_scheduled_consultations'))
     
@@ -1030,12 +1022,8 @@ def join_consultation(consultation_id):
     if is_doctor and not current_user.doctor.is_verified:
         return jsonify({'error': 'Your account needs to be verified before you can join consultations'}), 403
     
-    # Ensure the consultation is scheduled and within time window
-    now = datetime.utcnow()
-    time_window_start = consultation.scheduled_time - timedelta(minutes=15)
-    time_window_end = consultation.scheduled_time + timedelta(minutes=15)
-    
-    if consultation.status != 'accepted' or now < time_window_start or now > time_window_end:
+    # Only check if the consultation is accepted
+    if consultation.status != 'accepted':
         return jsonify({'error': 'Consultation is not currently active'}), 400
     
     # Generate a unique room ID based on consultation ID

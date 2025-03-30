@@ -54,20 +54,10 @@
                                         </p>
                                     </div>
                                     <div class="col-md-5 text-end">
-                                        {% set time_now = now() %}
-                                        {% set time_start = consultation.scheduled_time - timedelta(minutes=15) %}
-                                        {% set time_end = consultation.scheduled_time + timedelta(minutes=15) %}
-                                        
                                         <div class="mb-2">
-                                            {% if time_now >= time_start and time_now <= time_end %}
-                                                <a href="{{ url_for('doctor_consultation_room', consultation_id=consultation.id) }}" class="btn btn-success">
-                                                    <i class="fas fa-video me-1"></i> Join Consultation
-                                                </a>
-                                            {% else %}
-                                                <button class="btn btn-secondary" disabled>
-                                                    <i class="fas fa-video me-1"></i> Not Yet Available
-                                                </button>
-                                            {% endif %}
+                                            <a href="{{ url_for('doctor_consultation_room', consultation_id=consultation.id) }}" class="btn btn-success">
+                                                <i class="fas fa-video me-1"></i> Join Consultation
+                                            </a>
                                         </div>
                                         
                                         <div class="mb-2">
