@@ -1,0 +1,170 @@
+{% extends "layout.html" %}
+
+{% block title %}Create Prescription - MedConsult{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Create Prescription</h1>
+            <a href="{{ url_for('doctor_prescriptions') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Prescriptions
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card bg-dark text-light">
+            <div class="card-header">
+                <h5 class="mb-0">Patient Information</h5>
+            </div>
+            <div class="card-body">
+                <h5>{{ consultation.patient.first_name }} {{ consultation.patient.last_name }}</h5>
+                <p><strong>Age:</strong> {{ (now().date() - consultation.patient.date_of_birth).days // 365 }} years</p>
+                <p><strong>Consultation Date:</strong> 
+                    {% if consultation.completed_at %}
+                        {{ consultation.completed_at.strftime('%B %d, %Y') }}
+                    {% else %}
+                        {{ consultation.scheduled_time.strftime('%B %d, %Y') }}
+                    {% endif %}
+                </p>
+                <p><strong>Status:</strong> 
+                    {% if consultation.status == 'completed' %}
+                        <span class="badge bg-success">Completed</span>
+                    {% else %}
+                        <span class="badge bg-primary">Scheduled</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card bg-dark text-light">
+            <div class="card-header">
+                <h5 class="mb-0">Prescription Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="" id="prescription-form">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                {{ form.medication.label(class="form-label required") }}
+                                {% if form.medication.errors %}
+                                    {{ form.medication(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.medication.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.medication(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.dosage.label(class="form-label required") }}
+                                {% if form.dosage.errors %}
+                                    {{ form.dosage(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.dosage.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.dosage(class="form-control", placeholder="e.g., 500mg") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.frequency.label(class="form-label required") }}
+                                {% if form.frequency.errors %}
+                                    {{ form.frequency(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.frequency.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.frequency(class="form-control", placeholder="e.g., Twice daily") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.duration.label(class="form-label required") }}
+                                {% if form.duration.errors %}
+                                    {{ form.duration(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.duration.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.duration(class="form-control", placeholder="e.g., 7 days") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.instructions.label(class="form-label") }}
+                        {% if form.instructions.errors %}
+                            {{ form.instructions(class="form-control is-invalid", rows=3) }}
+                            <div class="invalid-feedback">
+                                {% for error in form.instructions.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.instructions(class="form-control", rows=3, placeholder="Special instructions for the patient...") }}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group mb-4">
+                        <label class="form-label required">Digital Signature</label>
+                        <div class="signature-container">
+                            <canvas id="signature-canvas" class="signature-canvas"></canvas>
+                            {{ form.signature(id="signature", class="d-none") }}
+                            {% if form.signature.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.signature.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex justify-content-end mt-2">
+                            <button type="button" id="clear-signature-btn" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-eraser me-1"></i> Clear Signature
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Your digital signature will be attached to this prescription for authentication. Please sign above.
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/signature.js') }}"></script>
+{% endblock %}

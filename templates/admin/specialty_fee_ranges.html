@@ -1,0 +1,117 @@
+{% extends "layout.html" %}
+
+{% block title %}Specialty Fee Ranges - MedConsult{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-4">Specialty Fee Ranges</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card bg-dark text-light">
+            <div class="card-header">
+                <h5 class="mb-0">Update Fee Range</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-group mb-3">
+                        {{ form.specialty.label(class="form-label") }}
+                        {% if form.specialty.errors %}
+                            {{ form.specialty(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.specialty.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.specialty(class="form-control") }}
+                        {% endif %}
+                        <div class="form-text">
+                            Enter an existing specialty to update or a new one to create.
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.min_fee.label(class="form-label") }}
+                                {% if form.min_fee.errors %}
+                                    {{ form.min_fee(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.min_fee.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.min_fee(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.max_fee.label(class="form-label") }}
+                                {% if form.max_fee.errors %}
+                                    {{ form.max_fee(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.max_fee.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.max_fee(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card bg-dark text-light">
+            <div class="card-header">
+                <h5 class="mb-0">Current Fee Ranges</h5>
+            </div>
+            <div class="card-body">
+                {% if fee_ranges %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Specialty</th>
+                                    <th>Minimum Fee ($)</th>
+                                    <th>Maximum Fee ($)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fee_range in fee_ranges %}
+                                    <tr>
+                                        <td>{{ fee_range.specialty }}</td>
+                                        <td>${{ fee_range.min_fee }}</td>
+                                        <td>${{ fee_range.max_fee }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No specialty fee ranges defined yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

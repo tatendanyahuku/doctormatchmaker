@@ -1,0 +1,169 @@
+{% extends "layout.html" %}
+
+{% block title %}Doctor Dashboard - MedConsult{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-4">Welcome, Dr. {{ current_user.doctor.first_name }}!</h1>
+        
+        {% if not current_user.doctor.is_verified %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Your account is pending verification by our administrators. Some features may be limited until your profile is verified.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card dashboard-card bg-dark text-light h-100">
+            <div class="card-body text-center">
+                <div class="display-4 mb-2">
+                    <i class="fas fa-clock text-warning"></i>
+                </div>
+                <h5 class="card-title">Pending Requests</h5>
+                <p class="card-text display-6">{{ pending_requests|length }}</p>
+                <a href="{{ url_for('doctor_pending_requests') }}" class="btn btn-primary">View Requests</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card dashboard-card bg-dark text-light h-100">
+            <div class="card-body text-center">
+                <div class="display-4 mb-2">
+                    <i class="fas fa-calendar-check text-primary"></i>
+                </div>
+                <h5 class="card-title">Upcoming Consultations</h5>
+                <p class="card-text display-6">{{ upcoming_consultations|length }}</p>
+                <a href="{{ url_for('doctor_scheduled_consultations') }}" class="btn btn-primary">View Schedule</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card dashboard-card bg-dark text-light h-100">
+            <div class="card-body text-center">
+                <div class="display-4 mb-2">
+                    <i class="fas fa-prescription text-info"></i>
+                </div>
+                <h5 class="card-title">Prescriptions</h5>
+                <p class="card-text display-6">{{ current_user.doctor.consultations|selectattr('prescriptions')|sum(attribute='prescriptions|length') }}</p>
+                <a href="{{ url_for('doctor_prescriptions') }}" class="btn btn-primary">View All</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card dashboard-card bg-dark text-light h-100">
+            <div class="card-body text-center">
+                <div class="display-4 mb-2">
+                    <i class="fas fa-dollar-sign text-success"></i>
+                </div>
+                <h5 class="card-title">Total Earnings</h5>
+                <p class="card-text display-6">${{ recent_payments|sum(attribute='amount')|round(2) }}</p>
+                <a href="{{ url_for('doctor_earnings') }}" class="btn btn-primary">View Details</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card bg-dark text-light mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Upcoming Consultations</h5>
+                <a href="{{ url_for('doctor_scheduled_consultations') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if upcoming_consultations %}
+                    {% for consultation in upcoming_consultations %}
+                        <div class="consultation-item p-3 mb-3 rounded bg-dark border border-secondary">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="mb-1">{{ consultation.patient.first_name }} {{ consultation.patient.last_name }}</h5>
+                                    <p class="mb-1">
+                                        <i class="fas fa-calendar-alt me-2"></i>
+                                        {{ consultation.scheduled_time.strftime('%B %d, %Y') }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="fas fa-clock me-2"></i>
+                                        {{ consultation.scheduled_time.strftime('%I:%M %p') }}
+                                    </p>
+                                    <p class="mb-0">
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-dollar-sign me-1"></i>{{ consultation.final_fee }}
+                                        </span>
+                                    </p>
+                                </div>
+                                <div>
+                                    {% set time_now = now() %}
+                                    {% set time_start = consultation.scheduled_time - timedelta(minutes=15) %}
+                                    {% set time_end = consultation.scheduled_time + timedelta(minutes=15) %}
+                                    
+                                    {% if time_now >= time_start and time_now <= time_end %}
+                                        <a href="{{ url_for('doctor_consultation_room', consultation_id=consultation.id) }}" class="btn btn-success">
+                                            <i class="fas fa-video me-1"></i> Join Now
+                                        </a>
+                                    {% else %}
+                                        <button class="btn btn-secondary" disabled>
+                                            <i class="fas fa-video me-1"></i> Not Yet Available
+                                        </button>
+                                    {% endif %}
+                                    
+                                    <a href="{{ url_for('doctor_consultation_messages', consultation_id=consultation.id) }}" class="btn btn-outline-primary mt-2">
+                                        <i class="fas fa-comments me-1"></i> Messages
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        You have no upcoming consultations scheduled.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-dark text-light">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Payments</h5>
+                <a href="{{ url_for('doctor_earnings') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_payments %}
+                    {% for payment in recent_payments %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6>{{ payment.consultation.patient.first_name }} {{ payment.consultation.patient.last_name }}</h6>
+                                    <p class="mb-0 small text-muted">
+                                        <i class="far fa-calendar-alt me-1"></i>
+                                        {{ payment.timestamp.strftime('%B %d, %Y') }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-dollar-sign me-1"></i>{{ payment.amount }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No recent payments.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Dashboard - MedConsult{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-4">Admin Dashboard</h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-4">
+        <div class="stats-card bg-dark">
+            <div class="stats-number text-primary">{{ patient_count }}</div>
+            <div class="stats-label">Total Patients</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="stats-card bg-dark">
+            <div class="stats-number text-success">{{ verified_doctor_count }}</div>
+            <div class="stats-label">Verified Doctors</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="stats-card bg-dark">
+            <div class="stats-number text-warning">{{ pending_doctor_count }}</div>
+            <div class="stats-label">Pending Verifications</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="stats-card bg-dark">
+            <div class="stats-number text-info">${{ total_revenue|round(2) }}</div>
+            <div class="stats-label">Total Revenue</div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6 mb-4">
+        <div class="card bg-dark text-light">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Doctor Verification</h5>
+                <a href="{{ url_for('doctor_verification') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if pending_doctor_count > 0 %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        You have <strong>{{ pending_doctor_count }}</strong> doctor{{ 's' if pending_doctor_count > 1 }} pending verification.
+                    </div>
+                    <a href="{{ url_for('doctor_verification') }}" class="btn btn-primary">
+                        <i class="fas fa-user-check me-1"></i> Verify Doctors
+                    </a>
+                {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        All doctors have been verified.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card bg-dark text-light">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Consultations Overview</h5>
+                <a href="{{ url_for('admin_metrics') }}" class="btn btn-sm btn-outline-primary">View Details</a>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h3 class="mb-0">{{ total_consultations }}</h3>
+                        <p class="text-muted">Total Consultations</p>
+                    </div>
+                    <div class="col-6">
+                        <h3 class="mb-0">{{ completed_consultations }}</h3>
+                        <p class="text-muted">Completed</p>
+                    </div>
+                </div>
+                <div class="progress mt-3">
+                    {% set completion_rate = (completed_consultations / total_consultations * 100) if total_consultations > 0 else 0 %}
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ completion_rate }}%" 
+                         aria-valuenow="{{ completion_rate }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ completion_rate|round }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card bg-dark text-light">
+            <div class="card-header">
+                <h5 class="mb-0">Weekly Activity</h5>
+            </div>
+            <div class="card-body">
+                <div id="admin-metrics-container" 
+                     class="chart-container"
+                     data-dates="{{ daily_metrics|map(attribute='date')|map('string')|list|tojson }}"
+                     data-new-patients="{{ daily_metrics|map(attribute='new_patients')|list|tojson }}"
+                     data-new-doctors="{{ daily_metrics|map(attribute='new_doctors')|list|tojson }}"
+                     data-consultations="{{ daily_metrics|map(attribute='completed_consultations')|list|tojson }}"
+                     data-revenue="{{ daily_metrics|map(attribute='total_revenue')|list|tojson }}">
+                    <canvas id="users-chart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card bg-dark text-light">
+            <div class="card-header">
+                <h5 class="mb-0">Doctor Specialties</h5>
+            </div>
+            <div class="card-body">
+                <div id="specialty-distribution-container" 
+                     class="chart-container"
+                     data-specialties="{{ Doctor.query.with_entities(Doctor.specialty, func.count(Doctor.id).label('count')).group_by(Doctor.specialty).all()|map(attribute='specialty')|list|tojson }}"
+                     data-counts="{{ Doctor.query.with_entities(Doctor.specialty, func.count(Doctor.id).label('count')).group_by(Doctor.specialty).all()|map(attribute='count')|list|tojson }}">
+                    <canvas id="specialty-distribution-chart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

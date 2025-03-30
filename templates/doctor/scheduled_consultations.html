@@ -1,0 +1,172 @@
+{% extends "layout.html" %}
+
+{% block title %}Scheduled Consultations - MedConsult{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-4">Scheduled Consultations</h1>
+        
+        <ul class="nav nav-tabs mb-4" id="consultationsTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab" aria-controls="upcoming" aria-selected="true">
+                    <i class="fas fa-calendar-day me-1"></i> Upcoming
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="past-tab" data-bs-toggle="tab" data-bs-target="#past" type="button" role="tab" aria-controls="past" aria-selected="false">
+                    <i class="fas fa-history me-1"></i> Past
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="consultationsTabContent">
+            <!-- Upcoming Consultations -->
+            <div class="tab-pane fade show active" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
+                {% set upcoming = consultations|selectattr('status', 'equalto', 'accepted')|selectattr('scheduled_time', 'gt', now())|list %}
+                
+                {% if upcoming %}
+                    {% for consultation in upcoming|sort(attribute='scheduled_time') %}
+                        <div class="card consultation-item status-accepted bg-dark text-light mb-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <h5 class="card-title mb-2">{{ consultation.patient.first_name }} {{ consultation.patient.last_name }}</h5>
+                                        <p class="mb-1">
+                                            <i class="fas fa-calendar-alt me-2"></i>
+                                            {{ consultation.scheduled_time.strftime('%A, %B %d, %Y') }}
+                                        </p>
+                                        <p class="mb-2">
+                                            <i class="fas fa-clock me-2"></i>
+                                            {{ consultation.scheduled_time.strftime('%I:%M %p') }}
+                                        </p>
+                                        <p class="mb-2">
+                                            <strong>Patient Information:</strong>
+                                        </p>
+                                        <ul class="mb-2">
+                                            <li>Age: {{ (now().date() - consultation.patient.date_of_birth).days // 365 }} years</li>
+                                            <li>Phone: {{ consultation.patient.phone_number }}</li>
+                                        </ul>
+                                        <p class="mb-0">
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-dollar-sign me-1"></i>{{ consultation.final_fee }}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-5 text-end">
+                                        {% set time_now = now() %}
+                                        {% set time_start = consultation.scheduled_time - timedelta(minutes=15) %}
+                                        {% set time_end = consultation.scheduled_time + timedelta(minutes=15) %}
+                                        
+                                        <div class="mb-2">
+                                            {% if time_now >= time_start and time_now <= time_end %}
+                                                <a href="{{ url_for('doctor_consultation_room', consultation_id=consultation.id) }}" class="btn btn-success">
+                                                    <i class="fas fa-video me-1"></i> Join Consultation
+                                                </a>
+                                            {% else %}
+                                                <button class="btn btn-secondary" disabled>
+                                                    <i class="fas fa-video me-1"></i> Not Yet Available
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="mb-2">
+                                            <a href="{{ url_for('doctor_consultation_messages', consultation_id=consultation.id) }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-comments me-1"></i> Messages
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        You have no upcoming consultations scheduled.
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Past Consultations -->
+            <div class="tab-pane fade" id="past" role="tabpanel" aria-labelledby="past-tab">
+                {% set past = consultations|selectattr('status', 'equalto', 'completed')|list %}
+                {% set past = past + consultations|selectattr('status', 'equalto', 'accepted')|selectattr('scheduled_time', 'le', now())|list %}
+                
+                {% if past %}
+                    {% for consultation in past|sort(attribute='scheduled_time', reverse=true) %}
+                        <div class="card consultation-item status-{{ consultation.status }} bg-dark text-light mb-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <h5 class="card-title mb-2">{{ consultation.patient.first_name }} {{ consultation.patient.last_name }}</h5>
+                                        
+                                        {% if consultation.scheduled_time %}
+                                            <p class="mb-1">
+                                                <i class="fas fa-calendar-alt me-2"></i>
+                                                {{ consultation.scheduled_time.strftime('%A, %B %d, %Y') }}
+                                            </p>
+                                            <p class="mb-2">
+                                                <i class="fas fa-clock me-2"></i>
+                                                {{ consultation.scheduled_time.strftime('%I:%M %p') }}
+                                            </p>
+                                        {% endif %}
+                                        
+                                        <p class="mb-0">
+                                            {% if consultation.status == 'completed' %}
+                                                <span class="badge bg-success">Completed</span>
+                                            {% elif consultation.status == 'accepted' %}
+                                                <span class="badge bg-warning text-dark">Scheduled but Missed</span>
+                                            {% endif %}
+                                            
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-dollar-sign me-1"></i>{{ consultation.final_fee }}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-5 text-end">
+                                        <div class="mb-2">
+                                            <a href="{{ url_for('doctor_consultation_messages', consultation_id=consultation.id) }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-comments me-1"></i> View Messages
+                                            </a>
+                                        </div>
+                                        
+                                        {% if consultation.status == 'accepted' %}
+                                            <div class="mb-2">
+                                                <form action="{{ url_for('complete_consultation', consultation_id=consultation.id) }}" method="post">
+                                                    <button type="submit" class="btn btn-success">
+                                                        <i class="fas fa-check-circle me-1"></i> Mark as Completed
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        {% if consultation.status == 'completed' and not consultation.prescriptions %}
+                                            <div>
+                                                <a href="{{ url_for('create_prescription', consultation_id=consultation.id) }}" class="btn btn-outline-info">
+                                                    <i class="fas fa-prescription me-1"></i> Create Prescription
+                                                </a>
+                                            </div>
+                                        {% elif consultation.prescriptions %}
+                                            <div>
+                                                <a href="{{ url_for('doctor_prescriptions') }}" class="btn btn-outline-info">
+                                                    <i class="fas fa-prescription me-1"></i> View Prescriptions
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        You have no past consultations.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% block title %}Pending Requests - MedConsult{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-4">Pending Consultation Requests</h1>
+        
+        {% if pending_requests %}
+            {% for request in pending_requests %}
+                <div class="card consultation-item status-requested bg-dark text-light mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-7">
+                                <h5 class="card-title mb-2">{{ request.patient.first_name }} {{ request.patient.last_name }}</h5>
+                                <p class="mb-2">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    Requested: {{ request.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Patient Information:</strong>
+                                </p>
+                                <ul class="mb-2">
+                                    <li>Age: {{ (now().date() - request.patient.date_of_birth).days // 365 }} years</li>
+                                    <li>Phone: {{ request.patient.phone_number }}</li>
+                                </ul>
+                                <p class="mb-0">
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-dollar-sign me-1"></i>{{ request.proposed_fee }} (Proposed Fee)
+                                    </span>
+                                </p>
+                                
+                                <button class="btn btn-sm btn-link toggle-details-btn mt-2" data-details-id="details-{{ request.id }}">
+                                    Show Details
+                                </button>
+                                
+                                <div id="details-{{ request.id }}" class="mt-3 d-none">
+                                    <div class="alert alert-dark">
+                                        <h6>Fee Range for {{ current_user.doctor.specialty }}:</h6>
+                                        <p>${{ current_user.doctor.min_fee }} - ${{ current_user.doctor.max_fee }}</p>
+                                        
+                                        <h6 class="mt-3">Patient Address:</h6>
+                                        <p>{{ request.patient.address }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Take Action</h6>
+                                        <form class="accept-consultation-form" action="{{ url_for('respond_to_consultation', consultation_id=request.id) }}" method="post">
+                                            <input type="hidden" name="action" value="accept">
+                                            <div class="mb-3">
+                                                <label for="scheduled_time" class="form-label">Schedule Consultation:</label>
+                                                <input type="datetime-local" class="form-control" id="scheduled_time" name="scheduled_time" required>
+                                            </div>
+                                            <button type="submit" class="btn btn-success w-100 mb-2">
+                                                <i class="fas fa-check me-1"></i> Accept Request
+                                            </button>
+                                        </form>
+                                        
+                                        <form action="{{ url_for('respond_to_consultation', consultation_id=request.id) }}" method="post">
+                                            <input type="hidden" name="action" value="reject">
+                                            <button type="submit" class="btn btn-danger w-100">
+                                                <i class="fas fa-times me-1"></i> Reject Request
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                You have no pending consultation requests.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

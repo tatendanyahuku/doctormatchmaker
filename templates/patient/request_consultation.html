@@ -1,0 +1,97 @@
+{% extends "layout.html" %}
+
+{% block title %}Request Consultation - MedConsult{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-4">Request Consultation</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card bg-dark text-light mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Doctor Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width: 100px; height: 100px;">
+                        <i class="fas fa-user-md fa-4x text-light"></i>
+                    </div>
+                </div>
+                <h4 class="text-center">Dr. {{ doctor.first_name }} {{ doctor.last_name }}</h4>
+                <p class="text-center mb-4">
+                    <span class="doctor-specialty">{{ doctor.specialty }}</span>
+                </p>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-money-bill-wave me-2"></i>Fee Range</h6>
+                    <p>${{ doctor.min_fee }} - ${{ doctor.max_fee }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-graduation-cap me-2"></i>Qualifications</h6>
+                    <p>{{ doctor.qualifications }}</p>
+                </div>
+                
+                <div>
+                    <h6><i class="fas fa-id-card me-2"></i>License Number</h6>
+                    <p>{{ doctor.license_number }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card bg-dark text-light">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Request Consultation</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="alert alert-info mb-4">
+                        <p class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            The fee range for {{ doctor.specialty }} is 
+                            <strong>${{ fee_range.min_fee }} to ${{ fee_range.max_fee }}</strong>.
+                            Please propose a fee within this range.
+                        </p>
+                    </div>
+                    
+                    <div class="form-group mb-4">
+                        {{ form.proposed_fee.label(class="form-label") }}
+                        {% if form.proposed_fee.errors %}
+                            {{ form.proposed_fee(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.proposed_fee.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.proposed_fee(class="form-control") }}
+                        {% endif %}
+                        <div class="form-text">
+                            Your proposed fee for the consultation with Dr. {{ doctor.last_name }}.
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <p class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            By requesting a consultation, you agree to pay the proposed fee once the doctor accepts your request.
+                        </p>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

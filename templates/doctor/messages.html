@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+{% block title %}Messages - MedConsult{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-4">Messages</h1>
+        
+        <div class="card bg-dark text-light">
+            <div class="card-header">
+                <h5 class="mb-0">My Consultation Messages</h5>
+            </div>
+            <div class="card-body">
+                {% if consultations %}
+                    <div class="list-group">
+                        {% for consultation in consultations %}
+                            <a href="{{ url_for('doctor_consultation_messages', consultation_id=consultation.id) }}" class="list-group-item list-group-item-action bg-dark text-light">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ consultation.patient.first_name }} {{ consultation.patient.last_name }}</h5>
+                                    <small>
+                                        {% if consultation.status == 'accepted' %}
+                                            <span class="badge bg-primary">Scheduled</span>
+                                        {% elif consultation.status == 'completed' %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                
+                                {% set message_count = consultation.messages|length %}
+                                <small>
+                                    <i class="fas fa-comments me-1"></i>
+                                    {% if message_count > 0 %}
+                                        {{ message_count }} message{{ 's' if message_count > 1 }}
+                                    {% else %}
+                                        No messages yet
+                                    {% endif %}
+                                </small>
+                                
+                                {% if consultation.scheduled_time %}
+                                    <small class="ms-3">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        {{ consultation.scheduled_time.strftime('%B %d, %Y at %I:%M %p') }}
+                                    </small>
+                                {% endif %}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        You don't have any consultations with messages yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

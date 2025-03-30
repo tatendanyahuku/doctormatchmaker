@@ -1,0 +1,171 @@
+{% extends "layout.html" %}
+
+{% block title %}MedConsult - Online Doctor Consultations{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-md-6">
+        <h1 class="display-4 mb-4">Connect with Doctors Online</h1>
+        <p class="lead">
+            MedConsult provides a secure platform for virtual consultations with verified medical professionals.
+        </p>
+        <p class="mb-4">
+            Our platform connects patients with qualified doctors for online consultations, making healthcare accessible from anywhere. Find specialists, book appointments, and receive prescriptions without leaving your home.
+        </p>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 me-md-2">Get Started</a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg px-4">Login</a>
+        </div>
+    </div>
+    <div class="col-md-6 d-flex align-items-center justify-content-center">
+        <div class="text-center">
+            <svg width="400" height="300" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="35" r="20" fill="#0d6efd" opacity="0.8"/>
+                <path d="M50 60 C 20 60, 10 90, 10 90 L 90 90 C 90 90, 80 60, 50 60" fill="#0d6efd" opacity="0.8"/>
+                <circle cx="30" cy="30" r="3" fill="white"/>
+                <circle cx="70" cy="30" r="3" fill="white"/>
+                <path d="M40 40 C 45 45, 55 45, 60 40" stroke="white" stroke-width="2" fill="none"/>
+                <rect x="30" y="75" width="40" height="10" rx="2" fill="#0d6efd"/>
+                <line x1="35" y1="80" x2="65" y2="80" stroke="white" stroke-width="2"/>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-12 text-center mb-4">
+        <h2>How It Works</h2>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 bg-dark text-light">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-search fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">Find a Specialist</h5>
+                <p class="card-text">
+                    Search for doctors by specialty and propose a consultation fee within their fee range.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 bg-dark text-light">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-calendar-check fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">Book Appointment</h5>
+                <p class="card-text">
+                    Doctors accept your request and schedule a time for the online consultation.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 bg-dark text-light">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-video fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">Consult Online</h5>
+                <p class="card-text">
+                    Connect via video call or chat for your consultation and receive electronic prescriptions.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-12 text-center mb-4">
+        <h2>Our Specialties</h2>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 bg-dark text-light">
+            <div class="card-body text-center">
+                <i class="fas fa-heartbeat fa-2x text-danger mb-3"></i>
+                <h5 class="card-title">Cardiology</h5>
+                <p class="card-text">Heart health consultations with expert cardiologists.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 bg-dark text-light">
+            <div class="card-body text-center">
+                <i class="fas fa-brain fa-2x text-info mb-3"></i>
+                <h5 class="card-title">Neurology</h5>
+                <p class="card-text">Specialized neurological care for brain and nervous system.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 bg-dark text-light">
+            <div class="card-body text-center">
+                <i class="fas fa-child fa-2x text-success mb-3"></i>
+                <h5 class="card-title">Pediatrics</h5>
+                <p class="card-text">Child healthcare from experienced pediatricians.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 bg-dark text-light">
+            <div class="card-body text-center">
+                <i class="fas fa-allergies fa-2x text-warning mb-3"></i>
+                <h5 class="card-title">Dermatology</h5>
+                <p class="card-text">Skin concerns addressed by qualified dermatologists.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 text-center mb-4">
+        <h2>Benefits of MedConsult</h2>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="d-flex align-items-start">
+            <div class="flex-shrink-0 me-3">
+                <i class="fas fa-clock fa-2x text-primary"></i>
+            </div>
+            <div>
+                <h5>Convenient Access</h5>
+                <p>Consult with doctors from the comfort of your home, saving time and travel.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="d-flex align-items-start">
+            <div class="flex-shrink-0 me-3">
+                <i class="fas fa-user-md fa-2x text-primary"></i>
+            </div>
+            <div>
+                <h5>Verified Doctors</h5>
+                <p>All doctors are verified by our admin team to ensure authentic qualifications.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="d-flex align-items-start">
+            <div class="flex-shrink-0 me-3">
+                <i class="fas fa-wallet fa-2x text-primary"></i>
+            </div>
+            <div>
+                <h5>Transparent Pricing</h5>
+                <p>Negotiate consultation fees within predefined ranges for each specialty.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="d-flex align-items-start">
+            <div class="flex-shrink-0 me-3">
+                <i class="fas fa-prescription fa-2x text-primary"></i>
+            </div>
+            <div>
+                <h5>Digital Prescriptions</h5>
+                <p>Receive signed electronic prescriptions that can be used at pharmacies.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

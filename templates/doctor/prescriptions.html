@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+
+{% block title %}Prescriptions - MedConsult{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-4">Prescriptions</h1>
+        
+        <ul class="nav nav-tabs mb-4" id="prescriptionsTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="issued-tab" data-bs-toggle="tab" data-bs-target="#issued" type="button" role="tab" aria-controls="issued" aria-selected="true">
+                    <i class="fas fa-prescription me-1"></i> Issued Prescriptions
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="false">
+                    <i class="fas fa-clock me-1"></i> Needs Prescription
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="prescriptionsTabContent">
+            <!-- Issued Prescriptions -->
+            <div class="tab-pane fade show active" id="issued" role="tabpanel" aria-labelledby="issued-tab">
+                {% if prescriptions %}
+                    <div class="row">
+                        {% for prescription in prescriptions %}
+                            <div class="col-md-6 mb-4">
+                                <div class="card prescription-card bg-dark text-light">
+                                    <div class="card-header prescription-header">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">{{ prescription.medication }}</h5>
+                                            <span class="badge bg-primary">{{ prescription.created_at.strftime('%B %d, %Y') }}</span>
+                                        </div>
+                                        <p class="mb-0 text-muted">
+                                            <i class="fas fa-user me-1"></i>
+                                            {{ prescription.consultation.patient.first_name }} {{ prescription.consultation.patient.last_name }}
+                                        </p>
+                                    </div>
+                                    <div class="card-body prescription-content">
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <p class="mb-1"><strong>Dosage:</strong></p>
+                                                <p>{{ prescription.dosage }}</p>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p class="mb-1"><strong>Frequency:</strong></p>
+                                                <p>{{ prescription.frequency }}</p>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p class="mb-1"><strong>Duration:</strong></p>
+                                                <p>{{ prescription.duration }}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <p class="mb-1"><strong>Instructions:</strong></p>
+                                            <p>{{ prescription.instructions or 'No special instructions.' }}</p>
+                                        </div>
+                                        
+                                        <div class="prescription-signature">
+                                            <p class="mb-1"><strong>Signature:</strong></p>
+                                            <img src="{{ prescription.signature }}" alt="Doctor's Signature" class="img-fluid" style="max-height: 60px;">
+                                        </div>
+                                    </div>
+                                    <div class="card-footer text-end">
+                                        <button class="btn btn-outline-primary btn-sm print-prescription" onclick="window.print()">
+                                            <i class="fas fa-print me-1"></i> Print
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        You haven't issued any prescriptions yet.
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Pending Prescriptions -->
+            <div class="tab-pane fade" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                {% set completed_consultations = consultations|selectattr('status', 'equalto', 'completed')|list %}
+                {% set needs_prescription = [] %}
+                
+                {% for consultation in completed_consultations %}
+                    {% if consultation.prescriptions|length == 0 %}
+                        {% do needs_prescription.append(consultation) %}
+                    {% endif %}
+                {% endfor %}
+                
+                {% if needs_prescription %}
+                    <div class="list-group">
+                        {% for consultation in needs_prescription %}
+                            <div class="list-group-item bg-dark text-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="mb-1">{{ consultation.patient.first_name }} {{ consultation.patient.last_name }}</h5>
+                                        <p class="mb-1">
+                                            <i class="fas fa-calendar-check me-2"></i>
+                                            Consultation: {{ consultation.completed_at.strftime('%B %d, %Y') }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <a href="{{ url_for('create_prescription', consultation_id=consultation.id) }}" class="btn btn-primary">
+                                            <i class="fas fa-prescription me-1"></i> Create Prescription
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        All completed consultations have prescriptions.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
