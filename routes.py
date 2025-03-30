@@ -303,6 +303,35 @@ def patient_consultations():
                           consultations=consultations,
                           now=datetime.utcnow,
                           timedelta=timedelta)
+                          
+@app.route('/patient/consultation/<int:consultation_id>/cancel', methods=['POST'])
+@login_required
+@patient_required
+def patient_cancel_consultation(consultation_id):
+    consultation = Consultation.query.get_or_404(consultation_id)
+    
+    # Ensure the consultation belongs to the current patient
+    if consultation.patient_id != current_user.patient.id:
+        abort(403)
+    
+    # Only allow cancellation of requested or accepted consultations
+    if consultation.status not in ['requested', 'accepted']:
+        flash('This consultation cannot be cancelled.', 'danger')
+        return redirect(url_for('patient_consultations'))
+    
+    # Cancel the consultation
+    consultation.status = 'cancelled'
+    
+    # If there is a payment, refund the patient
+    payment = Payment.query.filter_by(consultation_id=consultation.id).first()
+    if payment and payment.status == 'completed':
+        payment.status = 'refunded'
+        current_user.patient.wallet_balance += consultation.final_fee
+    
+    db.session.commit()
+    
+    flash('Consultation has been cancelled successfully.', 'success')
+    return redirect(url_for('patient_consultations'))
 
 @app.route('/patient/messages')
 @login_required
