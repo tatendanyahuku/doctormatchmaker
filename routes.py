@@ -795,11 +795,13 @@ def admin_dashboard():
 def doctor_verification():
     pending_doctors = Doctor.query.filter_by(is_verified=False).all()
     verified_doctors = Doctor.query.filter_by(is_verified=True).all()
+    form = DoctorVerificationForm()
     
     return render_template('admin/doctor_verification.html',
                           title='Doctor Verification',
                           pending_doctors=pending_doctors,
-                          verified_doctors=verified_doctors)
+                          verified_doctors=verified_doctors,
+                          form=form)
 
 @app.route('/admin/doctor/<int:doctor_id>/verify', methods=['POST'])
 @login_required
