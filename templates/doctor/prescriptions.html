@@ -65,6 +65,9 @@
                                         </div>
                                     </div>
                                     <div class="card-footer text-end">
+                                        <a href="{{ url_for('download_prescription', prescription_id=prescription.id) }}" class="btn btn-primary btn-sm me-2">
+                                            <i class="fas fa-download me-1"></i> Download
+                                        </a>
                                         <button class="btn btn-outline-primary btn-sm print-prescription" onclick="window.print()">
                                             <i class="fas fa-print me-1"></i> Print
                                         </button>

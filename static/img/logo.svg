@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Medical cross -->
+  <rect x="10" y="15" width="30" height="30" rx="4" fill="#2c3e50"/>
+  <rect x="18" y="10" width="14" height="40" rx="4" fill="#2c3e50"/>
+  
+  <!-- Pulse line -->
+  <path d="M50 30 L60 30 L65 15 L75 45 L85 15 L95 45 L100 30 L110 30" stroke="#2c3e50" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Text -->
+  <text x="120" y="35" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#2c3e50">MedConsult</text>
+</svg>

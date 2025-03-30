@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime, timedelta
 from functools import wraps
-from flask import render_template, url_for, flash, redirect, request, jsonify, session, abort
+from flask import render_template, url_for, flash, redirect, request, jsonify, session, abort, make_response
 from flask_login import login_user, current_user, logout_user, login_required
 from sqlalchemy import func, desc
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -779,6 +779,35 @@ def create_prescription(consultation_id):
                           form=form,
                           consultation=consultation,
                           now=datetime.utcnow)
+
+@app.route('/prescription/<int:prescription_id>/download')
+@login_required
+def download_prescription(prescription_id):
+    prescription = Prescription.query.get_or_404(prescription_id)
+    consultation = prescription.consultation
+    
+    # Ensure the user has access to the prescription
+    if current_user.role == 'doctor':
+        if consultation.doctor_id != current_user.doctor.id:
+            abort(403)
+    elif current_user.role == 'patient':
+        if consultation.patient_id != current_user.patient.id:
+            abort(403)
+    
+    # Generate HTML for the prescription
+    html = render_template('prescription_pdf.html',
+                          prescription=prescription,
+                          consultation=consultation,
+                          now=datetime.utcnow)
+    
+    # Create a response with the HTML content
+    response = make_response(html)
+    
+    # Set appropriate headers to make the browser download the file
+    response.headers['Content-Type'] = 'text/html'
+    response.headers['Content-Disposition'] = f'attachment; filename=prescription_{prescription.id}.html'
+    
+    return response
 
 @app.route('/doctor/consultation-room/<int:consultation_id>')
 @login_required
