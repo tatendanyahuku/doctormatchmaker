@@ -1,0 +1,9 @@
+<td>
+    <i class="fas fa-user-md me-1"></i> Dr. {{ consultation.doctor.first_name }} {{ consultation.doctor.last_name }}
+    <a href="{{ url_for('patient_consultation_messages', consultation_id=consultation.id) }}" class="btn btn-outline-primary btn-sm ms-2">
+        <i class="fas fa-envelope"></i>
+    </a>
+    <a href="{{ url_for('patient_consultation_room', consultation_id=consultation.id) }}" class="btn btn-outline-success btn-sm ms-2">
+        <i class="fas fa-video"></i>
+    </a>
+</td>

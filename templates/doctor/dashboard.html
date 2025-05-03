@@ -48,19 +48,6 @@
         <div class="card dashboard-card bg-dark text-light h-100">
             <div class="card-body text-center">
                 <div class="display-4 mb-2">
-                    <i class="fas fa-clock text-warning"></i>
-                </div>
-                <h5 class="card-title">Pending Requests</h5>
-                <p class="card-text display-6">{{ pending_requests|length }}</p>
-                <a href="{{ url_for('doctor_pending_requests') }}" class="btn btn-primary">View Requests</a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6 col-lg-3 mb-4">
-        <div class="card dashboard-card bg-dark text-light h-100">
-            <div class="card-body text-center">
-                <div class="display-4 mb-2">
                     <i class="fas fa-calendar-check text-primary"></i>
                 </div>
                 <h5 class="card-title">Upcoming Consultations</h5>
@@ -99,7 +86,7 @@
 
 <div class="row">
     <div class="col-md-8">
-        <div class="card bg-dark text-light mb-4">
+        <div class="card bg-dark text-light">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Upcoming Consultations</h5>
                 <a href="{{ url_for('doctor_scheduled_consultations') }}" class="btn btn-sm btn-outline-primary">View All</a>
@@ -110,39 +97,24 @@
                         <div class="consultation-item p-3 mb-3 rounded bg-dark border border-secondary">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <h5 class="mb-1">{{ consultation.patient.first_name }} {{ consultation.patient.last_name }}</h5>
+                                    <h5 class="mb-1">
+                                        <i class="fas fa-user me-1"></i> {{ consultation.patient.first_name }} {{ consultation.patient.last_name }}
+                                        <a href="{{ url_for('doctor_consultation_messages', consultation_id=consultation.id) }}" class="btn btn-outline-primary btn-sm ms-2">
+                                            <i class="fas fa-envelope"></i>
+                                        </a>
+                                        <a href="{{ url_for('doctor_consultation_room', consultation_id=consultation.id) }}" class="btn btn-outline-success btn-sm ms-2">
+                                            <i class="fas fa-video"></i>
+                                        </a>
+                                    </h5>
+                                    <p class="mb-1 text-muted">{{ consultation.patient.condition }}</p>
                                     <p class="mb-1">
                                         <i class="fas fa-calendar-alt me-2"></i>
                                         {{ consultation.scheduled_time.strftime('%B %d, %Y') }}
                                     </p>
-                                    <p class="mb-2">
+                                    <p class="mb-1">
                                         <i class="fas fa-clock me-2"></i>
                                         {{ consultation.scheduled_time.strftime('%I:%M %p') }}
                                     </p>
-                                    <p class="mb-0">
-                                        <span class="badge bg-primary">
-                                            <i class="fas fa-dollar-sign me-1"></i>{{ consultation.final_fee }}
-                                        </span>
-                                    </p>
-                                </div>
-                                <div>
-                                    {% set time_now = now() %}
-                                    {% set time_start = consultation.scheduled_time - timedelta(minutes=15) %}
-                                    {% set time_end = consultation.scheduled_time + timedelta(minutes=15) %}
-                                    
-                                    {% if time_now >= time_start and time_now <= time_end %}
-                                        <a href="{{ url_for('doctor_consultation_room', consultation_id=consultation.id) }}" class="btn btn-success">
-                                            <i class="fas fa-video me-1"></i> Join Now
-                                        </a>
-                                    {% else %}
-                                        <button class="btn btn-secondary" disabled>
-                                            <i class="fas fa-video me-1"></i> Not Yet Available
-                                        </button>
-                                    {% endif %}
-                                    
-                                    <a href="{{ url_for('doctor_consultation_messages', consultation_id=consultation.id) }}" class="btn btn-outline-primary mt-2">
-                                        <i class="fas fa-comments me-1"></i> Messages
-                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -150,7 +122,7 @@
                 {% else %}
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        You have no upcoming consultations scheduled.
+                        You have no upcoming consultations.
                     </div>
                 {% endif %}
             </div>
@@ -166,23 +138,29 @@
             <div class="card-body">
                 {% if recent_payments %}
                     {% for payment in recent_payments %}
-                        <div class="border-bottom pb-3 mb-3">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6>{{ payment.consultation.patient.first_name }} {{ payment.consultation.patient.last_name }}</h6>
-                                    <p class="mb-0 small text-muted">
-                                        <i class="far fa-calendar-alt me-1"></i>
-                                        {{ payment.timestamp.strftime('%B %d, %Y') }}
-                                    </p>
-                                </div>
-                                <div>
-                                    <span class="badge bg-success">
-                                        <i class="fas fa-dollar-sign me-1"></i>{{ payment.amount }}
-                                    </span>
-                                </div>
+                    <div class="payment-item p-3 mb-3 rounded bg-dark border border-secondary">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">Patient: {{ payment.patient_name }}</h5>
+                                {% if payment.scheduled_time %}
+                                <p class="mb-1">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    {{ payment.scheduled_time }}
+                                </p>
+                                {% else %}
+                                <p class="mb-1 text-muted">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    Not Scheduled
+                                </p>
+                                {% endif %}
+                                <span class="badge bg-primary">
+                                    <i class="fas fa-dollar-sign me-1"></i>
+                                    {{ payment.payment.amount|int }}
+                                </span>
                             </div>
                         </div>
-                    {% endfor %}
+                    </div>
+                {% endfor %}
                 {% else %}
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
@@ -229,5 +207,13 @@
         </div>
     </div>
 </div>
+
+<h3>Consultation Room</h3>
+<button id="startCall">Start Call</button>
+<video id="localVideo" autoplay muted></video>
+<video id="remoteVideo" autoplay></video>
+<script src="{{ url_for('static', filename='js/video.js') }}"></script>
+<script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+
 {% endif %}
 {% endblock %}

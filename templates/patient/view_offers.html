@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Offer Details</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Specialty: {{ offer.specialty }}</h5>
+            <p><strong>Proposed Fee:</strong> ${{ offer.proposed_fee }}</p>
+            <p><strong>Expires On:</strong> {{ offer.expires_at.strftime('%B %d, %Y') }}</p>
+            <form method="POST" action="{{ url_for('cancel_offer', offer_id=offer.id) }}">
+                {{ form.hidden_tag() }}
+                <button type="submit" class="btn btn-danger">Cancel Request</button>
+            </form>
+        </div>
+    </div>
+
+    <h3 class="mt-4">Doctor Responses</h3>
+    {% if responses %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Doctor Name</th>
+                    <th>Specialty</th>
+                    <th>Consultations</th>
+                    <th>Rating</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for response_data in responses %}
+                {% set response = response_data['response'] %}
+                {% set doctor = response_data['doctor'] %}
+                {% set completed_consultations_count = response_data['completed_consultations_count'] %}
+                <tr>
+                    <td>{{ doctor.first_name }} {{ doctor.last_name }}</td>
+                    <td>{{ doctor.specialty }}</td>
+                    <td>{{ completed_consultations_count }}</td>
+                    <td>{{ doctor.average_rating or 'No ratings yet' }}</td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <form method="POST" action="{{ url_for('accept_doctor_response', offer_id=offer.id, response_id=response.id) }}" style="display: inline;">
+                                {{ form.hidden_tag() }}
+                                <button type="submit" class="btn btn-success">Accept</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('decline_doctor_response', offer_id=offer.id, response_id=response.id) }}" style="display: inline;">
+                                {{ form.hidden_tag() }}
+                                <button type="submit" class="btn btn-danger">Decline</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No responses yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

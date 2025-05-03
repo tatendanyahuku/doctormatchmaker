@@ -14,11 +14,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.path == url_for('doctor_pending_requests') %}active{% endif %}" href="{{ url_for('doctor_pending_requests') }}">
-                        <i class="fas fa-clock me-1"></i> Pending Requests
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link {% if request.path == url_for('doctor_scheduled_consultations') %}active{% endif %}" href="{{ url_for('doctor_scheduled_consultations') }}">
                         <i class="fas fa-calendar-check me-1"></i> Scheduled
                     </a>
@@ -29,13 +24,18 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link {% if request.path == url_for('doctor_prescriptions') %}active{% endif %}" href="{{ url_for('doctor_prescriptions') }}">
+                        <i class="fas fa-prescription me-1"></i> Prescriptions
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link {% if request.path == url_for('doctor_earnings') %}active{% endif %}" href="{{ url_for('doctor_earnings') }}">
                         <i class="fas fa-dollar-sign me-1"></i> Earnings
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.path == url_for('doctor_prescriptions') %}active{% endif %}" href="{{ url_for('doctor_prescriptions') }}">
-                        <i class="fas fa-prescription me-1"></i> Prescriptions
+                    <a class="nav-link {% if request.path == url_for('doctor_available_offers') %}active{% endif %}" href="{{ url_for('doctor_available_offers') }}">
+                        <i class="fas fa-gavel me-1"></i> Available Offers
                     </a>
                 </li>
             </ul>

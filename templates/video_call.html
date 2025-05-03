@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}Video Call{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Video Call</h1>
+    <!-- Hidden fields to identify the session -->
+    <input type="hidden" id="currentUser" value="{{ current_user.username }}">
+    <input type="hidden" id="userRole" value="{{ current_user.role }}">
+    <input type="hidden" id="consultationId" value="{{ consultation_id }}">
+    <div class="video-container">
+        <video id="localVideo" autoplay muted></video>
+        <video id="remoteVideo" autoplay></video>
+    </div>
+    <div class="controls">
+        <button id="startCall" class="btn btn-success">Start Call</button>
+        <button id="endCall" class="btn btn-danger">End Call</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.video-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+video {
+    width: 45%;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+.controls {
+    text-align: center;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/video.js') }}"></script>
+{% endblock %}

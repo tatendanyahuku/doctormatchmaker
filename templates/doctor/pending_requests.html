@@ -81,4 +81,26 @@
         {% endif %}
     </div>
 </div>
+
+<h3>Pending Consultations</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Patient</th>
+            <th>Specialty</th>
+            <th>Scheduled Time</th>
+            <th>Proposed Fee</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for consultation in pending_consultations %}
+        <tr>
+            <td>{{ consultation.patient.first_name }} {{ consultation.patient.last_name }}</td>
+            <td>{{ consultation.doctor.specialty }}</td>
+            <td>{{ consultation.scheduled_time.strftime('%B %d, %Y %I:%M %p') }}</td>
+            <td>${{ consultation.proposed_fee }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

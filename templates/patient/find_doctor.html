@@ -3,112 +3,125 @@
 {% block title %}Find a Doctor - MedConsult{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <h1 class="mb-4">Find a Doctor</h1>
-        <div class="card bg-dark text-light mb-4">
-            <div class="card-body">
-                <form method="POST" action="" id="search-doctor-form">
-                    {{ form.hidden_tag() }}
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                {{ form.specialty.label(class="form-label") }}
-                                {% if form.specialty.errors %}
-                                    {{ form.specialty(class="form-select is-invalid") }}
-                                    <div class="invalid-feedback">
-                                        {% for error in form.specialty.errors %}
-                                            <span>{{ error }}</span>
-                                        {% endfor %}
-                                    </div>
-                                {% else %}
-                                    {{ form.specialty(class="form-select") }}
-                                {% endif %}
+<div class="container mt-4">
+    <h2>Find a Doctor</h2>
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" id="find-doctor-form">
+                        {{ form.hidden_tag() }}
+                        {{ form.csrf_token }}
+                        <div class="form-group mb-3">
+                            <label for="specialty">Select Specialty:</label>
+                            <select name="specialty" id="specialty" class="form-control" required>
+                                {% for specialty in form.specialty.choices %}
+                                    <option value="{{ specialty[0] }}">{{ specialty[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="fee-info mt-4 mb-3" style="display: none;">
+                            <h5>Recommended Fees for <span id="selectedSpecialty"></span></h5>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Minimum: $<span id="minFee">0</span></span>
+                                <span>Recommended: $<span id="recommendedFee">0</span></span>
+                                <span>Maximum: $<span id="maxFee">0</span></span>
                             </div>
+                            <input type="range" class="form-range" id="feeSlider" min="0" max="100" step="5">
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                {{ form.proposed_fee.label(class="form-label") }}
-                                {% if form.proposed_fee.errors %}
-                                    {{ form.proposed_fee(class="form-control is-invalid") }}
-                                    <div class="invalid-feedback">
-                                        {% for error in form.proposed_fee.errors %}
-                                            <span>{{ error }}</span>
-                                        {% endfor %}
-                                    </div>
-                                {% else %}
-                                    {{ form.proposed_fee(class="form-control") }}
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div id="fee-range-info" class="alert alert-info mt-3 mb-3"
-                    {% for fee_range in specialties %}
-                        data-min-{{ fee_range.specialty.lower().replace(' ', '-') }}="{{ fee_range.min_fee }}"
-                        data-max-{{ fee_range.specialty.lower().replace(' ', '-') }}="{{ fee_range.max_fee }}"
-                    {% endfor %}>
-                        Select a specialty to see the fee range.
-                    </div>
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        {{ form.submit(class="btn btn-primary") }}
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 
-{% if error_message %}
-<div class="alert alert-danger">
-    <i class="fas fa-exclamation-circle me-2"></i>
-    {{ error_message }}
-</div>
-{% endif %}
-
-{% if doctors %}
-<div class="row">
-    <div class="col-12">
-        <h3 class="mb-3">Available {{ form.specialty.data }} Doctors</h3>
-        
-        {% for doctor in doctors %}
-        <div class="card doctor-card bg-dark text-light mb-4">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-2 text-center mb-3 mb-md-0">
-                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px;">
-                            <i class="fas fa-user-md fa-3x text-light"></i>
+                        <div class="form-group mb-3">
+                            <label for="proposed_fee">Your Proposed Fee ($):</label>
+                            <input type="number" name="proposed_fee" id="proposed-fee" class="form-control" required>
                         </div>
-                    </div>
-                    <div class="col-md-7">
-                        <h4>Dr. {{ doctor.first_name }} {{ doctor.last_name }}</h4>
-                        <p class="mb-2">
-                            <span class="doctor-specialty">{{ doctor.specialty }}</span>
-                        </p>
-                        <p class="mb-2">
-                            <strong>Fee Range:</strong> ${{ doctor.min_fee }} - ${{ doctor.max_fee }}
-                        </p>
-                        <p class="mb-0">
-                            <strong>Qualifications:</strong> 
-                            {{ doctor.qualifications }}
-                        </p>
-                    </div>
-                    <div class="col-md-3 d-flex flex-column justify-content-center">
-                        <a href="{{ url_for('request_consultation', doctor_id=doctor.id) }}" class="btn btn-primary mb-2">
-                            <i class="fas fa-calendar-plus me-1"></i> Request Consultation
-                        </a>
-                    </div>
+
+                        <button type="submit" class="btn btn-primary">Submit Offer</button>
+                    </form>
                 </div>
             </div>
         </div>
-        {% endfor %}
     </div>
 </div>
-{% elif request.method == 'POST' and not error_message %}
-<div class="alert alert-info">
-    <i class="fas fa-info-circle me-2"></i>
-    No doctors found for the selected specialty. Please try a different specialty.
-</div>
-{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const specialtySelect = document.getElementById('specialty');
+    const feeInfo = document.querySelector('.fee-info');
+    const selectedSpecialtySpan = document.getElementById('selectedSpecialty');
+    const minFeeSpan = document.getElementById('minFee');
+    const recommendedFeeSpan = document.getElementById('recommendedFee');
+    const maxFeeSpan = document.getElementById('maxFee');
+    const feeSlider = document.getElementById('feeSlider');
+    const proposedFeeInput = document.getElementById('proposed-fee');
+    const recommendedFeeLink = document.getElementById('recommended-fee-link');
+
+    // Fetch specialty fee ranges when specialty changes
+    specialtySelect.addEventListener('change', function() {
+        if (this.value) {
+            fetch(`/api/specialties?specialty=${this.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    const specialty = data.find(s => s.name === this.value);
+                    if (specialty) {
+                        selectedSpecialtySpan.textContent = specialty.name;
+                        minFeeSpan.textContent = specialty.min_fee;
+                        recommendedFeeSpan.textContent = specialty.recommended_fee;
+                        maxFeeSpan.textContent = specialty.max_fee;
+
+                        feeSlider.min = specialty.min_fee;
+                        feeSlider.max = specialty.max_fee;
+                        feeSlider.value = specialty.recommended_fee;
+                        proposedFeeInput.value = specialty.recommended_fee;
+
+                        feeInfo.style.display = 'block';
+                    }
+                });
+        } else {
+            feeInfo.style.display = 'none';
+        }
+    });
+
+    // Update proposed fee when slider changes
+    feeSlider.addEventListener('input', function() {
+        proposedFeeInput.value = this.value;
+    });
+
+    // Update slider when proposed fee changes
+    proposedFeeInput.addEventListener('input', function() {
+        feeSlider.value = this.value;
+    });
+
+    // Handle recommended fee link click
+    recommendedFeeLink.addEventListener('click', function(event) {
+        event.preventDefault();
+        proposedFeeInput.value = recommendedFeeSpan.textContent;
+    });
+
+    // Handle form submission
+    document.getElementById('find-doctor-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            specialty: specialtySelect.value,
+            proposed_fee: parseFloat(proposedFeeInput.value)
+        };
+
+        fetch('/patient/find-doctor', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.href = '/patient/view-offers/' + data.offer_id;
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

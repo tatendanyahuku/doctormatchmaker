@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Schedule Consultation</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Doctor: {{ doctor.first_name }} {{ doctor.last_name }}</h5>
+            <p><strong>Specialty:</strong> {{ doctor.specialty }}</p>
+
+            <form method="post">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    <label for="date">Select Date:</label>
+                    <input type="date" id="date" name="date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="time">Select Time:</label>
+                    <input type="time" id="time" name="time" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Schedule</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const dateInput = document.getElementById('date');
+        const timeInput = document.getElementById('time');
+
+        form.addEventListener('submit', function(event) {
+            const dateValue = dateInput.value;
+            const timeValue = timeInput.value;
+
+            if (!dateValue || !timeValue) {
+                event.preventDefault();
+                alert('Please select both a valid date and time.');
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}Rate Your Doctor{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Rate Your Doctor</h1>
+    <p>Thank you for completing your consultation. Please rate your experience with Dr. {{ consultation.doctor.first_name }} {{ consultation.doctor.last_name }}.</p>
+
+    <form method="POST" action="{{ url_for('rate_doctor', consultation_id=consultation.id) }}">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+            <label for="rating" class="form-label">Rating (1 to 5 stars):</label>
+            <select class="form-select" id="rating" name="rating" required>
+                <option value="">Select a rating</option>
+                <option value="1">1 Star</option>
+                <option value="2">2 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="5">5 Stars</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="feedback" class="form-label">Feedback (optional):</label>
+            <textarea class="form-control" id="feedback" name="feedback" rows="4" placeholder="Write your feedback here..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit Rating</button>
+    </form>
+</div>
+{% endblock %}

@@ -108,7 +108,7 @@
         <div class="patient-info">
             <h3>Patient Information:</h3>
             <p><span class="label">Name:</span> {{ consultation.patient.first_name }} {{ consultation.patient.last_name }}</p>
-            <p><span class="label">Age:</span> {{ (now().date() - consultation.patient.date_of_birth).days // 365 }} years</p>
+            <p><span class="label">Age:</span> {{ (now.date() - consultation.patient.date_of_birth).days // 365 }} years</p>
             <p><span class="label">Consultation Date:</span> {{ consultation.completed_at.strftime('%B %d, %Y') if consultation.completed_at else consultation.scheduled_time.strftime('%B %d, %Y') }}</p>
         </div>
         

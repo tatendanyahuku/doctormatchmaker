@@ -22,7 +22,7 @@
             </div>
             <div class="card-body">
                 <h5>{{ consultation.patient.first_name }} {{ consultation.patient.last_name }}</h5>
-                <p><strong>Age:</strong> {{ (now().date() - consultation.patient.date_of_birth).days // 365 }} years</p>
+                <p><strong>Age:</strong> {{ (now.date() - consultation.patient.date_of_birth).days // 365 }} years</p>
                 <p><strong>Consultation Date:</strong> 
                     {% if consultation.completed_at %}
                         {{ consultation.completed_at.strftime('%B %d, %Y') }}
@@ -47,7 +47,7 @@
                 <h5 class="mb-0">Prescription Details</h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="" id="prescription-form">
+                <form method="POST" action="{{ url_for('send_prescription_to_patient', prescription_id=prescription.id) }}" id="prescription-form">
                     {{ form.hidden_tag() }}
                     
                     <div id="medications-container">
@@ -128,13 +128,8 @@
                         </div>
                     </div>
                     
-                    <div class="alert alert-info mb-4">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Your digital signature will be attached to this prescription for authentication. Please sign above.
-                    </div>
-                    
                     <div class="d-grid">
-                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                        {{ form.submit(class="btn btn-success btn-lg") }}
                     </div>
                 </form>
             </div>

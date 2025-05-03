@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Available Patient Offers</h2>
+    {% if offers %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Patient Name</th>
+                    <th>Specialty</th>
+                    <th>Proposed Fee</th>
+                    <th>Expires At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for offer in offers %}
+                <tr>
+                    <td>{{ offer.patient.user.username }}</td>
+                    <td>{{ offer.specialty }}</td>
+                    <td>${{ offer.proposed_fee }}</td>
+                    <td>{{ offer.expires_at.strftime('%B %d, %Y') }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('respond_to_offer', offer_id=offer.id) }}" class="d-inline">
+                            {{ form.hidden_tag() }} <!-- Include CSRF token -->
+                            <button type="submit" name="response" value="ACCEPTED" class="btn btn-success btn-sm">Accept</button>
+                            <button type="submit" name="response" value="DECLINED" class="btn btn-danger btn-sm">Decline</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info">No offers available at the moment.</div>
+    {% endif %}
+</div>
+{% endblock %}

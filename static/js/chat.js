@@ -164,3 +164,62 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const consultationRoom = document.getElementById("consultation-room");
+
+    if (consultationRoom) {
+        const consultationId = consultationRoom.getAttribute("data-consultation-id");
+        const userId = consultationRoom.getAttribute("data-user-id");
+        const userName = consultationRoom.getAttribute("data-user-name");
+
+        const messageForm = document.getElementById("message-form");
+        const messageInput = document.getElementById("message-input");
+        const messagesList = document.getElementById("messages-list");
+
+        // Fetch existing messages
+        async function fetchMessages() {
+            const response = await fetch(`/api/consultation/${consultationId}/messages`);
+            const data = await response.json();
+
+            if (data.success) {
+                messagesList.innerHTML = ""; // Clear existing messages
+                data.messages.forEach((msg) => {
+                    const messageElement = document.createElement("div");
+                    messageElement.classList.add("message");
+                    messageElement.innerHTML = `<strong>${msg.sender_name}:</strong> ${msg.content}`;
+                    messagesList.appendChild(messageElement);
+                });
+            }
+        }
+
+        // Send a new message
+        messageForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const content = messageInput.value.trim();
+            if (!content) return;
+
+            const response = await fetch(`/api/consultation/${consultationId}/send-message`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content }),
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                const messageElement = document.createElement("div");
+                messageElement.classList.add("message");
+                messageElement.innerHTML = `<strong>${userName}:</strong> ${content}`;
+                messagesList.appendChild(messageElement);
+                messageInput.value = ""; // Clear input field
+            }
+        });
+
+        // Poll for new messages every 2 seconds
+        setInterval(fetchMessages, 2000);
+
+        // Initial fetch of messages
+        fetchMessages();
+    }
+});

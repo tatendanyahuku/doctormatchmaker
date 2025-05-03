@@ -50,7 +50,11 @@
                                             {% if payment.consultation.completed_at %}
                                                 {{ payment.consultation.completed_at.strftime('%b %d, %Y') }}
                                             {% else %}
-                                                {{ payment.consultation.scheduled_time.strftime('%b %d, %Y') }}
+                                                {% if payment.consultation.scheduled_time %}
+                                                    {{ payment.consultation.scheduled_time.strftime('%b %d, %Y') }}
+                                                {% else %}
+                                                    Not Scheduled
+                                                {% endif %}
                                             {% endif %}
                                         </td>
                                         <td>${{ payment.amount }}</td>
@@ -79,105 +83,4 @@
     </div>
 </div>
 
-{% if payments|length > 0 %}
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card bg-dark text-light">
-            <div class="card-header">
-                <h5 class="mb-0">Earnings Overview</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="earnings-chart" height="300"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-{% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get earnings data
-        const payments = {{ payments|map(attribute='timestamp')|map('string')|list|tojson }};
-        const amounts = {{ payments|map(attribute='amount')|list|tojson }};
-        
-        // Group payments by month
-        const monthlyData = {};
-        for (let i = 0; i < payments.length; i++) {
-            const date = new Date(payments[i]);
-            const monthYear = `${date.getFullYear()}-${date.getMonth() + 1}`;
-            
-            if (!monthlyData[monthYear]) {
-                monthlyData[monthYear] = 0;
-            }
-            
-            monthlyData[monthYear] += amounts[i];
-        }
-        
-        // Sort months chronologically
-        const sortedMonths = Object.keys(monthlyData).sort();
-        const monthLabels = sortedMonths.map(month => {
-            const [year, monthNum] = month.split('-');
-            return new Date(year, monthNum - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        });
-        
-        const monthlyAmounts = sortedMonths.map(month => monthlyData[month]);
-        
-        // Create earnings chart
-        const ctx = document.getElementById('earnings-chart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: monthLabels,
-                datasets: [{
-                    label: 'Earnings per Month',
-                    data: monthlyAmounts,
-                    backgroundColor: 'rgba(40, 167, 69, 0.7)',
-                    borderColor: 'rgba(40, 167, 69, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return '$' + value;
-                            },
-                            color: '#f8f9fa'
-                        },
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: '#f8f9fa'
-                        },
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: '#f8f9fa'
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return '$' + context.raw.toFixed(2);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    });
-</script>
-{% endblock %}
-{% endif %}
 {% endblock %}

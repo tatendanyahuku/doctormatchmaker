@@ -43,7 +43,7 @@
                                         {% for medication in prescription.medications %}
                                         <div class="card bg-dark border-secondary mb-3">
                                             <div class="card-body">
-                                                <h6 class="card-title">{{ medication.medication }}</h6>
+                                                <h6 class="card-title">Medication Name: {{ medication.medication }}</h6>
                                                 <div class="row mb-2">
                                                     <div class="col-md-4">
                                                         <p class="mb-1"><strong>Dosage:</strong></p>
@@ -64,7 +64,7 @@
                                         
                                         <div class="mb-3">
                                             <p class="mb-1"><strong>Instructions:</strong></p>
-                                            <p>{{ prescription.instructions or 'No special instructions.' }}</p>
+                                            <p>{{ prescription.instructions }}</p>
                                         </div>
                                         
                                         <div class="prescription-signature">

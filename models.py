@@ -144,7 +144,7 @@ class Payment(db.Model):
     __tablename__ = 'payments'
     
     id = db.Column(db.Integer, primary_key=True)
-    consultation_id = db.Column(db.Integer, db.ForeignKey('consultations.id'), nullable=False)
+    consultation_id = db.Column(db.Integer, db.ForeignKey('consultations.id'), nullable=True)  # Allow nullable
     amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(50), default='pending')  # pending, completed, refunded
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
@@ -162,10 +162,47 @@ class SpecialtyFeeRange(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     specialty = db.Column(db.String(100), unique=True, nullable=False)
     min_fee = db.Column(db.Float, nullable=False)
+    recommended_fee = db.Column(db.Float, nullable=False)
     max_fee = db.Column(db.Float, nullable=False)
     
     def __repr__(self):
-        return f"SpecialtyFeeRange('{self.specialty}', ${self.min_fee}-${self.max_fee})"
+        return f"SpecialtyFeeRange('{self.specialty}', Min: ${self.min_fee}, Recommended: ${self.recommended_fee}, Max: ${self.max_fee})"
+
+
+class ConsultationOffer(db.Model):
+    __tablename__ = 'consultation_offers'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
+    specialty = db.Column(db.String(100), nullable=False)
+    proposed_fee = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), default='PENDING')  # PENDING, ACCEPTED, COMPLETED
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    
+    # Relationships
+    patient = db.relationship('Patient', backref='offers')
+    responses = db.relationship('OfferResponse', backref='offer', lazy=True)
+    
+    def __repr__(self):
+        return f"ConsultationOffer(Patient: {self.patient_id}, Specialty: {self.specialty}, Fee: ${self.proposed_fee})"
+
+
+class OfferResponse(db.Model):
+    __tablename__ = 'offer_responses'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    offer_id = db.Column(db.Integer, db.ForeignKey('consultation_offers.id'), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.id'), nullable=False)
+    status = db.Column(db.String(20), nullable=False)  # ACCEPTED, COUNTER, DECLINED
+    counter_fee = db.Column(db.Float, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    doctor = db.relationship('Doctor', backref='offer_responses')
+    
+    def __repr__(self):
+        return f"OfferResponse(Doctor: {self.doctor_id}, Status: {self.status})"
 
 
 class SystemMetrics(db.Model):
@@ -181,3 +218,28 @@ class SystemMetrics(db.Model):
     
     def __repr__(self):
         return f"SystemMetrics(Date: {self.date}, Revenue: ${self.total_revenue})"
+
+
+class Rating(db.Model):
+    __tablename__ = 'ratings'
+
+    id = db.Column(db.Integer, primary_key=True)
+    consultation_id = db.Column(db.Integer, db.ForeignKey('consultations.id'), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.id'), nullable=False)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    feedback = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    consultation = db.relationship('Consultation', backref=db.backref('ratings', lazy=True))
+    doctor = db.relationship('Doctor', backref=db.backref('ratings', lazy=True))
+    patient = db.relationship('Patient', backref=db.backref('ratings', lazy=True))
+
+
+class ConsultationSignaling(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    consultation_id = db.Column(db.Integer, nullable=False)
+    sender = db.Column(db.String(100), nullable=False)
+    receiver = db.Column(db.String(100), nullable=False)
+    type = db.Column(db.String(50), nullable=False)
+    data = db.Column(db.Text, nullable=False)

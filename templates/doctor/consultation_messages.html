@@ -1,124 +1,99 @@
 {% extends "layout.html" %}
 
-{% block title %}Consultation Messages - MedConsult{% endblock %}
+{% block title %}Consultation Messages{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="mb-0">Consultation Messages</h1>
-            <a href="{{ url_for('doctor_messages') }}" class="btn btn-outline-primary">
-                <i class="fas fa-arrow-left me-1"></i> Back to Messages
-            </a>
+<div class="container mt-4">
+    <h1 class="mb-4">Consultation Messages</h1>
+    <div class="chat-container">
+        <div class="chat-messages">
+            {% for message in messages %}
+            <div class="chat-message {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+                {% if message.sender_id != current_user.id %}
+                <div class="sender-name">{{ message.sender.username }}</div>
+                {% endif %}
+                <div class="message-content">{{ message.content }}</div>
+                <span class="chat-timestamp" style="display: none;"></span>
+            </div>
+            {% endfor %}
         </div>
-        
-        <div class="card bg-dark text-light mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Consultation Details</h5>
+        <form method="POST" class="chat-form">
+            {{ form.hidden_tag() }}
+            <div class="input-group">
+                {{ form.content(class="form-control", placeholder="Type a message...") }}
+                <button type="submit" class="btn btn-primary">Send</button>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Patient:</strong> {{ consultation.patient.first_name }} {{ consultation.patient.last_name }}</p>
-                        <p><strong>Age:</strong> {{ (now().date() - consultation.patient.date_of_birth).days // 365 }} years</p>
-                        <p><strong>Phone:</strong> {{ consultation.patient.phone_number }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p>
-                            <strong>Status:</strong>
-                            {% if consultation.status == 'requested' %}
-                                <span class="badge bg-warning text-dark">Pending</span>
-                            {% elif consultation.status == 'accepted' %}
-                                <span class="badge bg-primary">Scheduled</span>
-                            {% elif consultation.status == 'completed' %}
-                                <span class="badge bg-success">Completed</span>
-                            {% elif consultation.status == 'rejected' %}
-                                <span class="badge bg-danger">Rejected</span>
-                            {% elif consultation.status == 'cancelled' %}
-                                <span class="badge bg-secondary">Cancelled</span>
-                            {% endif %}
-                        </p>
-                        
-                        {% if consultation.scheduled_time %}
-                        <p>
-                            <strong>Scheduled for:</strong>
-                            {{ consultation.scheduled_time.strftime('%B %d, %Y at %I:%M %p') }}
-                        </p>
-                        {% endif %}
-                        
-                        <p>
-                            <strong>Fee:</strong>
-                            ${{ consultation.final_fee or consultation.proposed_fee }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="card bg-dark text-light">
-            <div class="card-header">
-                <h5 class="mb-0">Messages</h5>
-            </div>
-            <div class="card-body">
-                <div id="chat-container" 
-                     data-consultation-id="{{ consultation.id }}"
-                     data-user-id="{{ current_user.id }}"
-                     data-user-name="{{ current_user.username }}">
-                    
-                    <div id="messages-list" class="messages-list mb-3">
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="message-item d-flex {% if message.sender_id == current_user.id %}justify-content-end{% else %}justify-content-start{% endif %} mb-2">
-                                    <div class="message-content {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light text-dark{% endif %} p-2 rounded">
-                                        <div class="message-sender small {% if message.sender_id == current_user.id %}text-white-50{% else %}text-muted{% endif %}">
-                                            {% if message.sender_id == current_user.id %}
-                                                You
-                                            {% elif message.sender.role == 'patient' %}
-                                                {{ message.sender.patient.first_name }} {{ message.sender.patient.last_name }}
-                                            {% else %}
-                                                {{ message.sender.username }}
-                                            {% endif %}
-                                        </div>
-                                        <div class="message-text">
-                                            {{ message.content }}
-                                        </div>
-                                        <div class="message-time small {% if message.sender_id == current_user.id %}text-white-50{% else %}text-muted{% endif %} text-end">
-                                            {{ message.timestamp.strftime('%I:%M %p | %b %d') }}
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle me-2"></i>
-                                No messages yet. Start the conversation!
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    {% if consultation.status in ['accepted', 'completed'] %}
-                        <form id="message-form" class="message-form" method="POST" action="">
-                            {{ form.hidden_tag() }}
-                            <div class="input-group">
-                                {{ form.content(class="form-control", placeholder="Type your message...", id="message-input") }}
-                                <button type="submit" class="btn btn-primary" id="send-message-btn">
-                                    <i class="fas fa-paper-plane"></i>
-                                </button>
-                            </div>
-                        </form>
-                    {% else %}
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            Messaging is only available for accepted or completed consultations.
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+        </form>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}
+
+{% block styles %}
+<style>
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.chat-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+}
+.chat-message {
+    margin-bottom: 10px;
+    max-width: 70%;
+    padding: 10px;
+    border-radius: 20px;
+    position: relative;
+}
+.chat-message.sent {
+    background-color: #DCF8C6;
+    color: #000;
+    align-self: flex-end;
+}
+.chat-message.received {
+    background-color: #FFFFFF;
+    color: #000;
+    align-self: flex-start;
+}
+.sender-name {
+    font-weight: bold;
+    color: #007BFF;
+    margin-bottom: 5px;
+}
+.message-content {
+    font-size: 14px;
+    word-wrap: break-word;
+}
+.message-timestamp {
+    font-size: 10px;
+    color: #888;
+    text-align: right;
+    margin-top: 5px;
+}
+.message-status {
+    margin-left: 5px;
+    font-size: 10px;
+    color: #888;
+}
+.chat-form {
+    display: flex;
+    padding: 10px;
+    background-color: #fff;
+    border-top: 1px solid #ccc;
+}
+.input-group {
+    display: flex;
+    width: 100%;
+}
+</style>
 {% endblock %}
